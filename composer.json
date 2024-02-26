@@ -1,0 +1,18 @@
+{
+    "name": "ernest/carbon-api",
+    "autoload": {
+        "psr-4": {
+            "Ernest\\CarbonApi\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "ernestliang",
+            "email": "103881112+ernestliang@users.noreply.github.com"
+        }
+    ],
+    "require": {
+        "kreait/firebase-php": "^5.26",
+        "google/cloud-storage": "^1.39"
+    }
+}
