@@ -1,0 +1,12 @@
+# --- Option 1
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME}  -f [OR]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php [L,QSA]
+
+# --- Option 2
+# RewriteEngine On
+# RewriteBase /api
+# RewriteCond %{REQUEST_FILENAME} !-d
+# RewriteCond %{REQUEST_FILENAME} !-f
+# RewriteRule ^(.+)$ index.php [QSA,L]
