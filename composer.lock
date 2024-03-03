@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1326e5868f651f201ba936f889d8fc79",
+    "content-hash": "e2ccdacd211f75ce93a666cea6433c93",
     "packages": [
         {
             "name": "brick/math",
@@ -305,22 +305,79 @@
             "time": "2024-02-23T23:49:35+00:00"
         },
         {
-            "name": "google/cloud-storage",
-            "version": "v1.39.0",
+            "name": "google/cloud-firestore",
+            "version": "v1.41.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/googleapis/google-cloud-php-storage.git",
-                "reference": "2425a167578084af5c9b87fac6eb59b09b33b8f5"
+                "url": "https://github.com/googleapis/google-cloud-php-firestore.git",
+                "reference": "155e45d6212cbab4556e8a52098df00f6fb66702"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/googleapis/google-cloud-php-storage/zipball/2425a167578084af5c9b87fac6eb59b09b33b8f5",
-                "reference": "2425a167578084af5c9b87fac6eb59b09b33b8f5",
+                "url": "https://api.github.com/repos/googleapis/google-cloud-php-firestore/zipball/155e45d6212cbab4556e8a52098df00f6fb66702",
+                "reference": "155e45d6212cbab4556e8a52098df00f6fb66702",
+                "shasum": ""
+            },
+            "require": {
+                "ext-grpc": "*",
+                "google/cloud-core": "^1.52.7",
+                "google/gax": "^1.26.0",
+                "php": ">=7.4",
+                "ramsey/uuid": "^3.0|^4.0"
+            },
+            "require-dev": {
+                "erusev/parsedown": "^1.6",
+                "phpdocumentor/reflection": "^5.3.3",
+                "phpdocumentor/reflection-docblock": "^5.3",
+                "phpspec/prophecy-phpunit": "^2.0",
+                "phpunit/phpunit": "^9.0",
+                "squizlabs/php_codesniffer": "2.*"
+            },
+            "suggest": {
+                "ext-protobuf": "Provides a significant increase in throughput over the pure PHP protobuf implementation. See https://cloud.google.com/php/grpc for installation instructions."
+            },
+            "type": "library",
+            "extra": {
+                "component": {
+                    "id": "cloud-firestore",
+                    "target": "googleapis/google-cloud-php-firestore.git",
+                    "path": "Firestore",
+                    "entry": "src/FirestoreClient.php"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Google\\Cloud\\Firestore\\": "src",
+                    "GPBMetadata\\Google\\Firestore\\": "metadata"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "description": "Cloud Firestore Client for PHP",
+            "support": {
+                "source": "https://github.com/googleapis/google-cloud-php-firestore/tree/v1.41.1"
+            },
+            "time": "2024-02-09T19:51:53+00:00"
+        },
+        {
+            "name": "google/cloud-storage",
+            "version": "v1.39.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/googleapis/google-cloud-php-storage.git",
+                "reference": "448e0db09e598c796aa7c68eaf20fdf9b10296ef"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/googleapis/google-cloud-php-storage/zipball/448e0db09e598c796aa7c68eaf20fdf9b10296ef",
+                "reference": "448e0db09e598c796aa7c68eaf20fdf9b10296ef",
                 "shasum": ""
             },
             "require": {
                 "google/cloud-core": "^1.55",
-                "php": ">=7.4",
+                "php": "^8.0",
                 "ramsey/uuid": "^4.2.3"
             },
             "require-dev": {
@@ -357,9 +414,9 @@
             ],
             "description": "Cloud Storage Client for PHP",
             "support": {
-                "source": "https://github.com/googleapis/google-cloud-php-storage/tree/v1.39.0"
+                "source": "https://github.com/googleapis/google-cloud-php-storage/tree/v1.39.1"
             },
-            "time": "2024-02-23T23:49:35+00:00"
+            "time": "2024-03-01T11:25:35+00:00"
         },
         {
             "name": "google/common-protos",

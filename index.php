@@ -6,9 +6,9 @@
     header("Access-Control-Max-Age: 3600");
     header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-    // ---       Exit early so the page isn't fully loaded for options requests       --- //
+    // ---       Exit early so the page isn"t fully loaded for options requests       --- //
     // --- **** this is to skip the cors preflight check from client **** --- //
-    if (strtolower($_SERVER['REQUEST_METHOD']) == 'options') {
+    if (strtolower($_SERVER["REQUEST_METHOD"]) == "options") {
         exit();
     }
 
@@ -18,31 +18,42 @@
     $controller = null;
 
     if($requestVerb && $requestURL) {
-        
-        if(preg_match('/\/api\/users/', $requestURL)) {
-            require "./controllers/UserController.php";
-            $controller = new UserController();
-        }
-        else if(preg_match('/\/api\/bulletins/', $requestURL)) {
-            // require "./controllers/BulletinController.php";
-            // $controller = new BulletinController();
-        }
+        try {
+            if(preg_match("/\/api\/users/", $requestURL)) {
+                require "./src/controllers/UserController.php";
+                $controller = new UserController();
+            }
+            else if(preg_match("/\/api\/bulletins/", $requestURL)) {
+                require "./src/controllers/BulletinController.php";
+                $controller = new BulletinController();
+            }
+            else if(preg_match("/\/api\/events/", $requestURL)) {
+                require "./src/controllers/EventController.php";
+                $controller = new EventController();
+            }   
+            else if(preg_match("/\/api\/reminders/", $requestURL)) {
+                require "./src/controllers/ReminderController.php";
+                $controller = new ReminderController();
+            }
+            else if(preg_match("/\/api\/test/", $requestURL)) {
+                require "./src/controllers/TestController.php";
+                $controller = new TestController();
+            }
 
-        if($controller) {
-            try {
+            if ($controller) {
                 $controller->processRequest($requestVerb, $requestURL);
             }
-            catch(PDOException $pdoex) {
-                header('HTTP/1.1 500 Internal Server Error');
-                die(json_encode(array('message' => $pdoex->getMessage())));
-            } 
-            catch(Exception $ex) {
-                header('HTTP/1.1 500 Internal Server Error');
-                die(json_encode(array('message' => $ex->getMessage())));
-                // echo json_encode($ex);
-            }    
+            else throw new Exception("no such controllers");
         }
-        else {
-            echo "Invalid Api call; This is a test;";
+        catch(PDOException $pdoex) {
+            http_response_code(500);
+            echo json_encode([`message` => `{$pdoex->getMessage()}`]);
+            die(0);
         }
+        catch(Exception $ex) {
+            header("HTTP/1.1 500 Internal Server Error");
+            // die(json_encode(array("message"=>"{$ex->getMessage()}")));
+            die(json_encode(array("message" => "{$ex->getMessage()}")));
+        }
+        
     }

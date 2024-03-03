@@ -13,6 +13,7 @@
     ],
     "require": {
         "kreait/firebase-php": "^5.26",
-        "google/cloud-storage": "^1.39"
+        "google/cloud-storage": "^1.39",
+        "google/cloud-firestore": "^1.41"
     }
 }

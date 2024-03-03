@@ -1,9 +1,9 @@
 <?php 
     class Database {
-        private $host = 'localhost';
-        private $db_name = 'carbon_db';
+        private $host = '35.186.148.24';
+        private $db_name = 'carbon-db';
         private $username = 'root';
-        private $password = '';
+        private $password = 'Aeiou321';
 
         private $conn;
 

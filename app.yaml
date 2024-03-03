@@ -1,0 +1,7 @@
+service: default
+runtime: php81
+env: standard
+runtime_config:
+  operating_system: "ubuntu22"
+  runtime_version: 8.1
+  document_root: .
