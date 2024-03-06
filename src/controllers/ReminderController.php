@@ -59,11 +59,11 @@
                                 set event_id = :eventId, user_id = :userId, alert_date = :alertDate, status = :status where id=:id";
                     $sql = $this->pdo->prepare($stmt);
                     
-                    $sql->bindValue(":eventId", $model["eventId"], PDO::PARAM_STR);
-                    $sql->bindValue(":userId", $model["userId"], PDO::PARAM_STR);
-                    $sql->bindValue(":alertDate", $model["alertDate"], PDO::PARAM_STR);
-                    $sql->bindValue(":status", $model["status"], PDO::PARAM_STR);
-                    $sql->bindValue(":id",       $model["id"],       PDO::PARAM_INT);                    
+                    $sql->bindValue(":eventId",     $model["eventId"],   PDO::PARAM_STR);
+                    $sql->bindValue(":userId",      $model["userId"],    PDO::PARAM_STR);
+                    $sql->bindValue(":alertDate",   $model["alertDate"], PDO::PARAM_STR);
+                    $sql->bindValue(":status",      $model["status"],    PDO::PARAM_STR);
+                    $sql->bindValue(":id",          $model["id"],        PDO::PARAM_INT);                    
 
                     $sql->execute();                   
                     echo json_encode($sql->rowCount());
@@ -84,11 +84,11 @@
                         $stmt = "update carbon_reminders set event_id = :eventId, user_id = :userId, alert_date = :alertDate, status = :status WHERE user_email = :userEmail";
                     
                         $sql = $this->pdo->prepare($stmt);
-                        $sql->bindValue(":eventId",     $model["eventId"],     PDO::PARAM_STR);
-                        $sql->bindValue(":userEmail", $model["userEmail"], PDO::PARAM_STR);
-                        $sql->bindValue(":userId", $model["userId"], PDO::PARAM_STR);
-                        $sql->bindValue(":alertDate", $model["alertDate"], PDO::PARAM_STR);
-                        $sql->bindValue(":status", $model["status"], PDO::PARAM_STR);
+                        $sql->bindValue(":eventId",     $model["eventId"],   PDO::PARAM_STR);
+                        $sql->bindValue(":userEmail",   $model["userEmail"], PDO::PARAM_STR);
+                        $sql->bindValue(":userId",      $model["userId"],    PDO::PARAM_STR);
+                        $sql->bindValue(":alertDate",   $model["alertDate"], PDO::PARAM_STR);
+                        $sql->bindValue(":status",      $model["status"],    PDO::PARAM_STR);
                         
                         $sql->execute();
                         echo json_encode($sql->rowCount());               
