@@ -1,7 +1,7 @@
 <?php 
     class Database {
-        private $host     = '35.186.148.24';        // ! //     103.3.173.137
-        private $db_name  = 'carbon-db';         // ! //     testdb
+        private $host     = '35.186.148.24';    // ! //     103.3.173.137
+        private $db_name  = 'carbon-db';        // ! //     testdb
         private $username = 'root';             // ! //     looksee
         private $password = 'Aeiou321';         // ! //     return2626!
 
@@ -25,7 +25,7 @@
         // private $host       = '/cloudsql/rliang-carbon-project:asia-southeast1:carbon-db';
         // private $username   = "root";
         // private $password   = "mycarbondb777!";
-        // private $dbname    = "carbon-db";
+        // private $dbname     = "carbon-db";
         // //private $socketpath = '/cloudsql/rliang-carbon-project:asia-southeast1:carbon-db';
         
         // public function getPDOObject(): PDO {
