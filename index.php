@@ -35,6 +35,10 @@
                 require "./src/controllers/ReminderController.php";
                 $controller = new ReminderController();
             }
+            else if(preg_match("/\/api\/test/", $requestURL)) {
+                require "./src/controllers/TestController.php";
+                $controller = new TestController();
+            }
             
 
             if ($controller) {

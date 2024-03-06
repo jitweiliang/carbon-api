@@ -14,7 +14,8 @@
                 "-S",
                 "localhost:0"
             ],
-            "program": "${workspaceFolder}/api.php",
+            // "program": "${workspaceFolder}/api.php",
+            "program": "",
             "cwd": "${workspaceRoot}",
             "port": 9003,
             "serverReadyAction": {

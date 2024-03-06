@@ -73,21 +73,14 @@
                 case "POST":
                     // --- get json data from request
                     $model = (array) json_decode(file_get_contents("php://input"), true);
-                    
-                    // --- check if email already exists in the users table
-                    $sql = $this->pdo->prepare("select id from carbon_events where user_email = :userEmail");
-                    $sql->bindValue(":userEmail", $model["userEmail"], PDO::PARAM_STR);                    
-                    $sql->execute();                   
-                    $recordCount = $sql->rowCount();
-
-                        $stmt = "update carbon_users set event_name = :eventName, event_desc = :eventDesc, start_date = :startDate, end_date = :endDate WHERE id = :id";
+ 
+                        $stmt = "inseert into carbon_users (event_name, event_desc, start_date, end_date) VALUES (:eventName, :eventDesc, :startDate, :endDate)";
                     
                         $sql = $this->pdo->prepare($stmt);
                         $sql->bindValue(":eventName", $model["eventName"], PDO::PARAM_STR);
                         $sql->bindValue(":eventDesc", $model["eventDesc"], PDO::PARAM_STR);
                         $sql->bindValue(":startDate", $model["startDate"], PDO::PARAM_STR);
                         $sql->bindValue(":endDate", $model["endDate"], PDO::PARAM_STR);
-                        $sql->bindValue(":id", $model["id"], PDO::PARAM_STR);
                         
                         $sql->execute();
                         echo json_encode($sql->rowCount());     
