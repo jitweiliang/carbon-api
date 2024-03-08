@@ -69,45 +69,63 @@
                     break;
                 // ============================ P O S T ============================
                 case "POST":
-                    // --- get json data from request
-                    $model = (array) json_decode(file_get_contents("php://input"), true);
-                    
-                    // --- check if email already exists in the users table
-                    $sql = $this->pdo->prepare("select id from carbon_users where user_email = :userEmail");
-                    $sql->bindValue(":userEmail", $model["userEmail"], PDO::PARAM_STR);                    
-                    $sql->execute();                   
-                    $recordCount = $sql->rowCount();
+                    switch(true) {
+                        case preg_match('/\/api\/users$/', $uri):
+                            // --- get json data from request
+                            $model = (array) json_decode(file_get_contents("php://input"), true);
+                            
+                            // --- check if email already exists in the users table
+                            $sql = $this->pdo->prepare("select id from carbon_users where user_email = :userEmail");
+                            $sql->bindValue(":userEmail", $model["userEmail"], PDO::PARAM_STR);                    
+                            $sql->execute();                   
+                            $recordCount = $sql->rowCount();
 
-                    // --- if user does not exists, then will do an insert into table
-                    if($recordCount == 0) {
-                        $stmt = "insert into carbon_users (user_name, user_email, provider, token) 
-                                            values (:userName, :userEmail, :provider, :token)";
+                            // --- if user does not exists, then will do an insert into table
+                            if($recordCount == 0) {
+                                $stmt = "insert into carbon_users (user_name, user_email, provider, token) 
+                                                    values (:userName, :userEmail, :provider, :token)";
 
-                        $sql = $this->pdo->prepare($stmt);
-                        $sql->bindValue(":userName",  $model["userName"],  PDO::PARAM_STR);
-                        $sql->bindValue(":userEmail", $model["userEmail"], PDO::PARAM_STR);
-                        $sql->bindValue(":provider",  $model["provider"],  PDO::PARAM_STR);
-                        $sql->bindValue(":token",     $model["token"],     PDO::PARAM_STR);
-          
-                        $sql->execute();
-                        echo json_encode($sql->rowCount());
+                                $sql = $this->pdo->prepare($stmt);
+                                $sql->bindValue(":userName",  $model["userName"],  PDO::PARAM_STR);
+                                $sql->bindValue(":userEmail", $model["userEmail"], PDO::PARAM_STR);
+                                $sql->bindValue(":provider",  $model["provider"],  PDO::PARAM_STR);
+                                $sql->bindValue(":token",     $model["token"],     PDO::PARAM_STR);
+                
+                                $sql->execute();
+                                echo json_encode($sql->rowCount());
+                            }
+                            // --- if user exists, then will update user data in table
+                            else if($recordCount == 1) {
+                                $stmt = "update carbon_users set token = :token WHERE user_email = :userEmail";
+                            
+                                $sql = $this->pdo->prepare($stmt);
+                                $sql->bindValue(":token",     $model["token"],     PDO::PARAM_STR);
+                                $sql->bindValue(":userEmail", $model["userEmail"], PDO::PARAM_STR);
+                                
+                                $sql->execute();
+                                echo json_encode($sql->rowCount());
+                            }
+                            // --- if more than one users with the same email
+                            else {
+                                throw new Exception("Duplicte Emails detected !!!");
+                            }
+                            break;   
+
+                        case preg_match('/\/api\/users\/img$/', $uri):
+                            $imageFileName = $_FILES['imgfile']['name'];
+                            $userId = $_POST["userid"];
+
+                            $fileNameParts = explode('.', $imageFileName);
+                            $extension = end($fileNameParts);
+                            $imageName = "profile_{$userId}.{$extension}";
+
+                            $imageTmpName = $_FILES['imgfile']['tmp_name'];
+                            $fileStream = fopen($imageTmpName, 'r+');
+
+                            $this->sdk->storageStoreImage($imageName, $fileStream);
+
+                            break;
                     }
-                    // --- if user exists, then will update user data in table
-                    else if($recordCount == 1) {
-                        $stmt = "update carbon_users set token = :token WHERE user_email = :userEmail";
-                    
-                        $sql = $this->pdo->prepare($stmt);
-                        $sql->bindValue(":token",     $model["token"],     PDO::PARAM_STR);
-                        $sql->bindValue(":userEmail", $model["userEmail"], PDO::PARAM_STR);
-                        
-                        $sql->execute();
-                        echo json_encode($sql->rowCount());
-                    }
-                    // --- if more than one users with the same email
-                    else {
-                        throw new Exception("Duplicte Emails detected !!!");
-                    }                
-
                     break;
                 // ========================== E R R O R  ===========================
                 default:

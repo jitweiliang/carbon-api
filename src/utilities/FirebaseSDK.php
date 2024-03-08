@@ -10,6 +10,10 @@
     use Google\Cloud\Firestore\FirestoreClient;
     use Kreait\Firebase\Contract\Firestore;
 
+    // -- Cloud Storage API
+    use Google\Cloud\Storage\StorageClient;
+    use Kreait\Firebase\Contract\Storage;
+
     // -- Messaging API
     use Kreait\Firebase\Contract\Messaging;
     use Kreait\Firebase\Messagin\Notification;
@@ -57,4 +61,18 @@
         }
 
         // ======== CloudStorage
+        public function storageToServer($fileName) {
+            
+        }
+
+        public function storageGetImage($fileName) {
+
+        }
+
+        public function storageStoreImage($fileName, $fileStream) {
+            $storage = $this->factory->createStorage();
+            $bucket = $storage->getBucket();
+
+            $bucket->upload($fileStream, ['name' => $fileName]);
+        }
     }

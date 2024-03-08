@@ -74,7 +74,7 @@
                     // --- get json data from request
                     $model = (array) json_decode(file_get_contents("php://input"), true);
  
-                        $stmt = "inseert into carbon_users (event_name, event_desc, start_date, end_date) VALUES (:eventName, :eventDesc, :startDate, :endDate)";
+                        $stmt = "insert into carbon_users (event_name, event_desc, start_date, end_date) VALUES (:eventName, :eventDesc, :startDate, :endDate)";
                     
                         $sql = $this->pdo->prepare($stmt);
                         $sql->bindValue(":eventName", $model["eventName"], PDO::PARAM_STR);
