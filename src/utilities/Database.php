@@ -1,9 +1,14 @@
 <?php 
     class Database {
-        private $host     = '35.186.148.24';    // ! //     103.3.173.137
-        private $db_name  = 'carbon-db';        // ! //     testdb
-        private $username = 'root';             // ! //     looksee
-        private $password = 'Aeiou321';         // ! //     return2626!
+        // ! // 35.186.148.24       103.3.173.137
+        // ! // carbon-db           testdb
+        // ! // root                looksee
+        // ! // Aeiou321            return2626!
+
+        private $host     = '103.3.173.137';
+        private $db_name  = 'testdb';
+        private $username = 'looksee';
+        private $password = 'return2626!';
 
         private $conn;
         public function getPDOObject(): PDO {

@@ -1,9 +1,10 @@
 <?php
 
-    require "./utilities/Database.php";
-    require "InterfController.php";
+    require "./src/utilities/Database.php";
+    require "IController.php";
 
-    class BulletinController implements IController {
+    class BulletinController implements IController 
+    {
         private $pdo;
 
         public function __construct() {
@@ -11,13 +12,18 @@
             $this->pdo = $db->getPDOObject();
         }
 
-        public function processRequest(string $verb, $uri) {
+        public function processRequest(string $verb, ?string $uri): void 
+        {
             switch ($verb) {
                 case "GET":
                     switch(true) {
                         // -- get all users
-                        case preg_match('/\/api\/bulletins$/', $uri):
-                            $stmt = "select * FROM carbon_bulletins";
+                        case preg_match('/\/api\/bulletins\/latest$/', $uri):
+                            $stmt = "select t1.id as id, t2.id as userId, t2.user_name as userName, 
+                                        t1.title as title, t1.message as message, t1.post_date as postDate 
+                                        from carbon_bulletins t1 
+                                            left join carbon_users t2 on t1.user_id = t2.id order by t1.id desc limit 10";
+                                            
                             $sql = $this->pdo->prepare($stmt);
                             $sql->execute();
                             
@@ -30,7 +36,7 @@
                             // this is the last parameter in the url
                             $param = basename($uri);    
 
-                            $stmt = "SELECT * FROM carbon_bulletinss WHERE id = :id";
+                            $stmt = "SELECT * FROM carbon_bulletins WHERE id = :id";
                             $sql = $this->pdo->prepare($stmt);
                             $sql->bindValue(":id", $param, PDO::PARAM_INT);
                             $sql->execute();
@@ -42,8 +48,10 @@
                         // --- if requests do not match any api
                         default:
                             throw new Exception("Invalid get request !!!");
+                            break;
                         }
-
+                        
+                    break;
                 case "POST":
                     $model = (array) json_decode(file_get_contents("php://input"), true);
                     $stmt = "INSERT INTO carbon_bulletins (user_id, message, img_url, post_date)

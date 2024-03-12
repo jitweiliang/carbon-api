@@ -21,9 +21,16 @@
                 case "GET":
                     switch(true) {
                         // -- get all users
-                        case preg_match('/\/api\/events$/', $uri):
-                            $stmt = "select * FROM carbon_events";
+                        case preg_match('/\/api\/events\/latest\/user\/[1-9]/', $uri):
+                            // this is the last parameter in the url
+                            $param = basename($uri);    
+
+                            $stmt = "select t1.id AS evtId, t2.id AS reminderId, t1.event_name AS eventName, t1.event_desc AS eventDesc, t1.start_date AS startDate, t1.end_Date AS endDate, t2.reminder_date AS reminderDate 
+                                        from carbon_events t1
+                                            left join carbon_reminders t2 ON t1.id = t2.event_id AND t2.user_id = :userId
+                                            where start_date >= NOW();";
                             $sql = $this->pdo->prepare($stmt);
+                            $sql->bindValue(":userId", $param, PDO::PARAM_INT);
                             $sql->execute();
                             
                             $data = $sql->fetchAll(PDO::FETCH_OBJ);
@@ -35,7 +42,7 @@
                             // this is the last parameter in the url
                             $param = basename($uri);    
 
-                            $stmt = "SELECT * FROM carbon_events WHERE id = :id";
+                            $stmt = "select * from carbon_events WHERE id = :id";
                             $sql = $this->pdo->prepare($stmt);
                             $sql->bindValue(":id", $param, PDO::PARAM_INT);
                             $sql->execute();
@@ -62,8 +69,8 @@
                     $sql->bindValue(":eventName", $model["eventName"], PDO::PARAM_STR);
                     $sql->bindValue(":eventDesc", $model["eventDesc"], PDO::PARAM_STR);
                     $sql->bindValue(":startDate", $model["startDate"], PDO::PARAM_STR);
-                    $sql->bindValue(":endDate", $model["endDate"], PDO::PARAM_STR);
-                    $sql->bindValue(":id",       $model["id"],       PDO::PARAM_INT);                    
+                    $sql->bindValue(":endDate",   $model["endDate"],   PDO::PARAM_STR);
+                    $sql->bindValue(":id",        $model["id"],        PDO::PARAM_INT);                    
 
                     $sql->execute();                   
                     echo json_encode($sql->rowCount());
@@ -80,7 +87,7 @@
                         $sql->bindValue(":eventName", $model["eventName"], PDO::PARAM_STR);
                         $sql->bindValue(":eventDesc", $model["eventDesc"], PDO::PARAM_STR);
                         $sql->bindValue(":startDate", $model["startDate"], PDO::PARAM_STR);
-                        $sql->bindValue(":endDate", $model["endDate"], PDO::PARAM_STR);
+                        $sql->bindValue(":endDate",   $model["endDate"],   PDO::PARAM_STR);
                         
                         $sql->execute();
                         echo json_encode($sql->rowCount());     
