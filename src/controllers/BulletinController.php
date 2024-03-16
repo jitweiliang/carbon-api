@@ -54,14 +54,13 @@
                     break;
                 case "POST":
                     $model = (array) json_decode(file_get_contents("php://input"), true);
-                    $stmt = "INSERT INTO carbon_bulletins (user_id, message, img_url, post_date)
-                                VALUES (:userId, :message, :imgUrl, :postDate)";
+                    $stmt = "INSERT INTO carbon_bulletins (user_id, message, img_url)
+                                VALUES (:userId, :message, :imgUrl)";
 
                     $sql = $this->pdo->prepare($stmt);
                     $sql->bindValue(":userId", $model["userId"], PDO::PARAM_STR);
                     $sql->bindValue(":message", $model["message"], PDO::PARAM_STR);
                     $sql->bindValue(":imgUrl", $model["imgUrl"], PDO::PARAM_STR);
-                    $sql->bindValue(":postDate", $model["postDate"], PDO::PARAM_STR);
 
                     $sql->execute();
 

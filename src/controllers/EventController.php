@@ -25,7 +25,8 @@
                             // this is the last parameter in the url
                             $param = basename($uri);    
 
-                            $stmt = "select t1.id AS evtId, t2.id AS reminderId, t1.event_name AS eventName, t1.event_desc AS eventDesc, t1.start_date AS startDate, t1.end_Date AS endDate, t2.reminder_date AS reminderDate 
+                            $stmt = "select t1.id AS evtId, t2.id AS reminderId, t1.event_name AS eventName, t1.event_desc AS eventDesc, t1.start_date AS startDate, t1.end_Date AS endDate, 
+                                        t2.remind_before as remindBefore, t2.reminder_date AS reminderDate 
                                         from carbon_events t1
                                             left join carbon_reminders t2 ON t1.id = t2.event_id AND t2.user_id = :userId
                                             where start_date >= NOW();";

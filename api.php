@@ -55,7 +55,6 @@
             header("HTTP/1.1 500 Internal Server Error");
             // die(json_encode(array("message"=>"{$ex->getMessage()}")));
             die(json_encode(array("message" => "{$ex->getMessage()}")));
-        }
-        
+        }        
     }
     
