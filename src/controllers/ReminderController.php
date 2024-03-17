@@ -31,7 +31,8 @@
 
                             break;
                         case preg_match('/\/api\/reminders/user\/[1,9]', $uri):
-                                $stmt = "select * FROM carbon_reminders where user_id = :userId";
+                                $stmt = "select * 
+                                            FROM carbon_reminders where user_id = :userId and date(reminder_date) >= NOW()";
                                 $sql = $this->pdo->prepare($stmt);
                                 $sql->execute();
                                 
@@ -64,20 +65,28 @@
                     switch(true) {
                         case preg_match('/\/api\/reminders/toggle$/'):
                             $model = (array) json_decode(file_get_contents("php://input"), true);
-                            // { eventId: eventId, userId: userId, remindeBefore: remindBefore } //
+                            // { eventId: eventId, userId: userId, remindeBefore: remindBefore, reminderId: nullable (if !null means existing reminder) } //
 
-                            $stmt = "insert into carbon_reminders (user_id, event_id, remind_before, reminder_date) 
-                                                (:userId, :eventId, :remindBefore, :reminderDate";
-                            $sql = $this->pdo->prepare($stmt);
-                    
-                            $sql->bindValue(":eventId",      $model["eventId"],         PDO::PARAM_INT);
-                            $sql->bindValue(":userId",       $model["userId"],          PDO::PARAM_INT);
-                            $sql->bindValue(":remindBefore", $model["reminderBefore"],  PDO::PARAM_STR);
-                            $sql->bindValue(":reminderDate", $model["reminderDate"],    PDO::PARAM_STR);
+                            if($model["reminderId"]) {
+                                $stmt = "delete carbon_reminders where id = :id";
+                                $sql = $this->pdo->prepare($stmt);
+
+                                $sql->bindValue(":id", $model["reminderId"], PDO::PARAM_INT);
+                            }
+                            else {
+                                $stmt = "insert into carbon_reminders (user_id, event_id, remind_before, reminder_date) 
+                                                    (:userId, :eventId, :remindBefore, :reminderDate";
+                                    $sql = $this->pdo->prepare($stmt);
+
+                                    $sql->bindValue(":eventId",      $model["eventId"],         PDO::PARAM_INT);
+                                    $sql->bindValue(":userId",       $model["userId"],          PDO::PARAM_INT);
+                                    $sql->bindValue(":remindBefore", $model["reminderBefore"],  PDO::PARAM_STR);
+                                    $sql->bindValue(":reminderDate", $model["reminderDate"],    PDO::PARAM_STR);
+                            }
 
                             $sql->execute();                   
                             echo json_encode($sql->rowCount());
-    
+     
                             break;
                         case preg_match('/\/api\/reminders\/change$/'):
                             $model = (array) json_decode(file_get_contents("php://input"), true);
@@ -95,21 +104,6 @@
 
                             break;
                     }
-
-
-
-                    $stmt = "update carbon_reminders 
-                                set event_id = :eventId, user_id = :userId, alert_date = :alertDate, status = :status where id=:id";
-                    $sql = $this->pdo->prepare($stmt);
-                    
-                    $sql->bindValue(":eventId",     $model["eventId"],   PDO::PARAM_STR);
-                    $sql->bindValue(":userId",      $model["userId"],    PDO::PARAM_STR);
-                    $sql->bindValue(":alertDate",   $model["alertDate"], PDO::PARAM_STR);
-                    $sql->bindValue(":status",      $model["status"],    PDO::PARAM_STR);
-                    $sql->bindValue(":id",          $model["id"],        PDO::PARAM_INT);                    
-
-                    $sql->execute();                   
-                    echo json_encode($sql->rowCount());
 
                     break;
                 // ============================ P O S T ============================
