@@ -61,8 +61,42 @@
                     break;
                 // ============================= P U T =============================
                 case "PUT":
-                    // --- get json data from request
-                    $model = (array) json_decode(file_get_contents("php://input"), true);
+                    switch(true) {
+                        case preg_match('/\/api\/reminders/toggle$/'):
+                            $model = (array) json_decode(file_get_contents("php://input"), true);
+                            // { eventId: eventId, userId: userId, remindeBefore: remindBefore } //
+
+                            $stmt = "insert into carbon_reminders (user_id, event_id, remind_before, reminder_date) 
+                                                (:userId, :eventId, :remindBefore, :reminderDate";
+                            $sql = $this->pdo->prepare($stmt);
+                    
+                            $sql->bindValue(":eventId",      $model["eventId"],         PDO::PARAM_INT);
+                            $sql->bindValue(":userId",       $model["userId"],          PDO::PARAM_INT);
+                            $sql->bindValue(":remindBefore", $model["reminderBefore"],  PDO::PARAM_STR);
+                            $sql->bindValue(":reminderDate", $model["reminderDate"],    PDO::PARAM_STR);
+
+                            $sql->execute();                   
+                            echo json_encode($sql->rowCount());
+    
+                            break;
+                        case preg_match('/\/api\/reminders\/change$/'):
+                            $model = (array) json_decode(file_get_contents("php://input"), true);
+                            // { eventId: eventId, remindeBefore: remindBefore } //
+                            // remindbefore = 5m/1d/1w //
+
+                            $stmt = "update carbon_reminders set remind_before = :remindBefore where event_id = :eventId";
+                            $sql = $this->pdo->prepare($stmt);
+                    
+                            $sql->bindValue(":eventId",      $model["eventId"],      PDO::PARAM_INT);
+                            $sql->bindValue(":remindBefore", $model["remindBefore"], PDO::PARAM_STR);
+                            
+                            $sql->execute();                   
+                            echo json_encode($sql->rowCount());   
+
+                            break;
+                    }
+
+
 
                     $stmt = "update carbon_reminders 
                                 set event_id = :eventId, user_id = :userId, alert_date = :alertDate, status = :status where id=:id";
