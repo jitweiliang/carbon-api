@@ -131,5 +131,5 @@
                 default:
                     throw new Exception("Invalid User Controller request");
             }            
-        }
+            }
     }   
