@@ -1,15 +1,19 @@
 <?php
 
     require "./src/utilities/Database.php";
+    require "./src/utilities/FirebaseSDK.php";
     require "IController.php";
 
     class BulletinController implements IController 
     {
         private $pdo;
+        private $sdk;
 
         public function __construct() {
             $db = new Database();
             $this->pdo = $db->getPDOObject();
+
+            $this->sdk = new FirebaseSDK();
         }
 
         public function processRequest(string $verb, ?string $uri): void 
@@ -54,15 +58,20 @@
                     break;
                 case "POST":
                     $model = (array) json_decode(file_get_contents("php://input"), true);
-                    $stmt = "INSERT INTO carbon_bulletins (user_id, message, img_url)
-                                VALUES (:userId, :message, :imgUrl)";
+                    
+                    $stmt = "insert into carbon_bulletins (user_id, title, message, img_url)
+                                        values (:userId, :title, :message, :imgUrl)";
 
                     $sql = $this->pdo->prepare($stmt);
-                    $sql->bindValue(":userId", $model["userId"], PDO::PARAM_STR);
+                    $sql->bindValue(":userId",  $model["userId"], PDO::PARAM_STR);
+                    $sql->bindValue(":title",   $model["title"], PDO::PARAM_STR);
                     $sql->bindValue(":message", $model["message"], PDO::PARAM_STR);
-                    $sql->bindValue(":imgUrl", $model["imgUrl"], PDO::PARAM_STR);
+                    $sql->bindValue(":imgUrl",  $model["imgUrl"], PDO::PARAM_STR);
 
                     $sql->execute();
+                    if($sql->rowCount() > 0) {
+                        $this->sdk->firestoreAdd('bulletins', $model["userName"]);
+                    }
 
                     break;
 
