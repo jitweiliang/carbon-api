@@ -1,16 +1,21 @@
 <?php
     require "./src/utilities/Database.php";
+    require "./src/utilities/FirebaseSDK.php";
+
     require "IController.php";
 
     class UserController implements IController
     {
         private $pdo;
+        private $sdk;
 
         public function __construct()
         {
             // --- get a new PDO object for mysql connection
             $db = new Database();
             $this->pdo = $db->getPDOObject();
+
+            $this->sdk = new FirebaseSDK();
         }
 
 
@@ -22,7 +27,8 @@
                     switch(true) {
                         // -- get all users
                         case preg_match('/\/api\/users$/', $uri):
-                            $stmt = "select * FROM carbon_users";
+                            $stmt = "select id as id, user_name as userName, user_email as userEmail, photo_url as photoUrl, about_me as aboutMe 
+                                        from carbon_users";
                             $sql = $this->pdo->prepare($stmt);
                             $sql->execute();
                             
@@ -35,13 +41,15 @@
                             // this is the last parameter in the url
                             $param = basename($uri);    
 
-                            $stmt = "SELECT * FROM carbon_users WHERE id = :id";
+                            $stmt = "select id as id, user_name as userName, user_email as userEmail, user_address1 as userAddress1, user_address2 as userAddress2,
+                                        user_contactno as userContactNo, photo_url as photoUrl, about_me as aboutMe 
+                                        from carbon_users WHERE id = :id";
                             $sql = $this->pdo->prepare($stmt);
                             $sql->bindValue(":id", $param, PDO::PARAM_INT);
                             $sql->execute();
                             
                             $data = $sql->fetch(PDO::FETCH_ASSOC);
-                            echo json_encode($data);    
+                            echo json_encode($data);
 
                             break;
                         // --- if requests do not match any api
@@ -52,24 +60,74 @@
                     break;
                 // ============================= P U T =============================
                 case "PUT":
-                    // --- get json data from request
-                    $model = (array) json_decode(file_get_contents("php://input"), true);
+                    switch(true) {
+                        case preg_match('/\/api\/users$/', $uri):
+                            // --- get json data from request
+                            $model = (array) json_decode(file_get_contents("php://input"), true);
 
-                    $stmt = "update carbon_users 
-                                set user_name = :userName, photo_url = :photoUrl where id=:id";
-                    $sql = $this->pdo->prepare($stmt);
-                    
-                    $sql->bindValue(":userName", $model["userName"], PDO::PARAM_STR);
-                    $sql->bindValue(":photoUrl", $model["photoUrl"], PDO::PARAM_STR);
-                    $sql->bindValue(":id",       $model["id"],       PDO::PARAM_INT);                    
+                            $stmt = "update carbon_users 
+                                            set user_name=:userName, user_address1=:userAddress1, user_address2=:userAddress2, user_contactNo=:userContactNo, about_me=:aboutMe  
+                                            where id=:id";
+                            $sql = $this->pdo->prepare($stmt);
+                            
+                            $sql->bindValue(":userName",      $model["userName"],      PDO::PARAM_STR);
+                            $sql->bindValue(":userAddress1",  $model["userAddress1"],  PDO::PARAM_STR);
+                            $sql->bindValue(":userAddress2",  $model["userAddress2"],  PDO::PARAM_STR);
+                            $sql->bindValue(":userContactNo", $model["userContactNo"], PDO::PARAM_STR);
+                            $sql->bindValue(":aboutMe",       $model["aboutMe"],       PDO::PARAM_STR);
+                            $sql->bindValue(":id",            $model["id"],            PDO::PARAM_INT);                    
 
-                    $sql->execute();                   
-                    echo json_encode($sql->rowCount());
+                            $sql->execute();                   
+                            echo json_encode($sql->rowCount());
+
+                            break;
+                    }
 
                     break;
                 // ============================ P O S T ============================
                 case "POST":
                     switch(true) {
+                        // -- get single user by email
+                        case preg_match('/\/api\/users\/email$/', $uri):
+                            // --- get json data from request
+                            $model = (array) json_decode(file_get_contents("php://input"), true);
+
+                            $stmt = "select id as id, user_name as userName, user_email as userEmail, user_address1 as userAddress1, user_address2 as userAddress2,
+                                            user_contactno as userContactNo, photo_url as photoUrl, about_me as aboutMe 
+                                            from carbon_users where user_email = :userEmail";
+                            
+                            $sql = $this->pdo->prepare($stmt);
+                            $sql->bindValue(":userEmail", $model["userEmail"], PDO::PARAM_STR);
+                            $sql->execute();
+                                                 
+                            $data = $sql->fetch(PDO::FETCH_ASSOC);
+                            echo json_encode($data);    
+                        
+                            break; 
+                        // -- upload images
+                        case preg_match('/\/api\/users\/img$/', $uri):
+                                $imageFileName = $_FILES['imgfile']['name'];
+                                $imageTmpName = $_FILES['imgfile']['tmp_name'];
+
+                                $userEmail = $_POST["userEmail"];
+   
+                                $imageFileName = $this->sdk->storageStoreImage($imageTmpName, $imageFileName);
+
+                                // ---
+                                if($imageFileName) {
+                                    // https://storage.googleapis.com/<<bucket name>>/5813testload.png
+                                    $photoUrl = "https://storage.googleapis.com/carbon-project-9a417.appspot.com/{$imageFileName}";
+                                    $stmt = "update carbon_users set photo_url = :photoUrl where user_email = :userEmail";
+                
+                                    $sql = $this->pdo->prepare($stmt);
+                                    $sql->bindValue(":photoUrl",  $photoUrl, PDO::PARAM_STR);
+                                    $sql->bindValue(":userEmail", $userEmail, PDO::PARAM_STR);
+                                    $sql->execute();
+                                }
+
+                                break;
+                               
+                        // -- upsert user profile
                         case preg_match('/\/api\/users$/', $uri):
                             // --- get json data from request
                             $model = (array) json_decode(file_get_contents("php://input"), true);
@@ -109,20 +167,6 @@
                             else {
                                 throw new Exception("Duplicte Emails detected !!!");
                             }
-                            break;   
-
-                        case preg_match('/\/api\/users\/img$/', $uri):
-                            $imageFileName = $_FILES['imgfile']['name'];
-                            $userId = $_POST["userid"];
-
-                            $fileNameParts = explode('.', $imageFileName);
-                            $extension = end($fileNameParts);
-                            $imageName = "profile_{$userId}.{$extension}";
-
-                            $imageTmpName = $_FILES['imgfile']['tmp_name'];
-                            $fileStream = fopen($imageTmpName, 'r+');
-
-                            $this->sdk->storageStoreImage($imageName, $fileStream);
 
                             break;
                     }
@@ -131,5 +175,5 @@
                 default:
                     throw new Exception("Invalid User Controller request");
             }            
-            }
-    }   
+        }
+    }

@@ -69,10 +69,22 @@
 
         }
 
-        public function storageStoreImage($fileName, $fileStream) {
+        public function storageStoreImage($imgTmpName, $imgFileName) {
             $storage = $this->factory->createStorage();
             $bucket = $storage->getBucket();
 
-            $bucket->upload($fileStream, ['name' => $fileName]);
+            
+            // -- generate a random filename for image to be uploaded to gcloud
+            $fileNameParts = explode('.', $imgFileName);
+            $extension = end($fileNameParts);
+            $prefix = substr(microtime(), -5, 5); // unique number generator
+
+            $newImageFileName = "profile_{$prefix}.{$extension}";
+    
+
+            $stream = fopen($imgTmpName, 'r+');
+            $result = $bucket->upload($stream, ['name' => $newImageFileName]);
+
+            return $newImageFileName;
         }
     }

@@ -6,16 +6,16 @@
         // ! // Aeiou321            return2626!
 
         // This is the COMPANY one
-        // private $host     = '103.3.173.137';
-        // private $db_name  = 'testdb';
-        // private $username = 'looksee';
-        // private $password = 'return2626!';
+        private $host     = '103.3.173.137';
+        private $db_name  = 'testdb';
+        private $username = 'looksee';
+        private $password = 'return2626!';
 
         // This is the CLOUD one
-        private $host     = '35.186.148.24';
-        private $db_name  = 'carbon-db';
-        private $username = 'root';
-        private $password = 'Aeiou321';
+        // private $host     = '35.186.148.24';
+        // private $db_name  = 'carbon-db';
+        // private $username = 'root';
+        // private $password = 'Aeiou321';
 
         private $conn;
         public function getPDOObject(): PDO {

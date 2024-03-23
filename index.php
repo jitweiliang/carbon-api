@@ -35,6 +35,10 @@
                 require "./src/controllers/ReminderController.php";
                 $controller = new ReminderController();
             }
+            else if(preg_match("/\/api\/emissions/", $requestURL)) {
+                require "./src/controllers/EmissionController.php";
+                $controller = new EmissionController();
+            }
             else if(preg_match("/\/api\/test/", $requestURL)) {
                 require "./src/controllers/TestController.php";
                 $controller = new TestController();
@@ -48,6 +52,7 @@
         }
         catch(PDOException $pdoex) {
             http_response_code(500);
+            header("HTTP/1.1 500 Internal Server Error");
             echo json_encode([`message` => `{$pdoex->getMessage()}`]);
             die(0);
         }
