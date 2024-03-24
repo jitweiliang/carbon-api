@@ -2,6 +2,7 @@
 
     require "./src/utilities/Database.php";
     require "./src/utilities/FirebaseSDK.php";
+    
     require "IController.php";
 
     class BulletinController implements IController 
@@ -21,7 +22,7 @@
             switch ($verb) {
                 case "GET":
                     switch(true) {
-                        // -- get all users
+                        // -- get all latest bulletins (top 10)
                         case preg_match('/\/api\/bulletins\/latest$/', $uri):
                             $stmt = "select t1.id as id, t2.id as userId, t2.user_name as userName, 
                                         t1.title as title, t1.message as message, t1.post_date as postDate 
@@ -32,20 +33,6 @@
                             $sql->execute();
                             
                             $data = $sql->fetchAll(PDO::FETCH_OBJ);
-                            echo json_encode($data);    
-
-                            break;
-                        // -- get single user by id
-                        case preg_match('/\/api\/bulletins\/id\/[1-9]/', $uri):
-                            // this is the last parameter in the url
-                            $param = basename($uri);    
-
-                            $stmt = "SELECT * FROM carbon_bulletins WHERE id = :id";
-                            $sql = $this->pdo->prepare($stmt);
-                            $sql->bindValue(":id", $param, PDO::PARAM_INT);
-                            $sql->execute();
-                            
-                            $data = $sql->fetch(PDO::FETCH_ASSOC);
                             echo json_encode($data);    
 
                             break;
@@ -74,32 +61,6 @@
                     }
 
                     break;
-
-                case "PUT":
-                    $model = (array) json_decode(file_get_contents("php://input"), true);
-                    $stmt = "UPDATE carbon_bulletin SET user_id = :userId, message = :message, img_url = :imgUrl, post_date = :postDate";
-
-                    $sql = $this->pdo->prepare($stmt);
-                    $sql->bindValue(":userId", $model["userId"], PDO::PARAM_STR);
-                    $sql->bindValue(":message", $model["message"], PDO::PARAM_STR);
-                    $sql->bindValue(":imgUrl", $model["imgUrl"], PDO::PARAM_STR);
-                    $sql->bindValue(":postDate", $model["postDate"], PDO::PARAM_STR);
-
-                    $sql->execute();
-
-                    break;
-
-                case "DELETE":
-                    $model = (array) json_decode(file_get_contents("php://input"), true);
-                    $stmt = "DELETE FROM carbon_bulletin where id = :id";
-
-                    $sql = $this->pdo->prepare($stmt);
-                    $sql->bindValue(":id", $model["id"], PDO::PARAM_STR);
-
-                    $sql->execute();
-
-                    break;
-
             }
         }
     }

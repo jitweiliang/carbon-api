@@ -2,6 +2,7 @@
 
     require "./src/utilities/Database.php";
     require "./src/utilities/FirebaseSDK.php";
+    
     require "IController.php";
 
     class EmissionController implements IController 
@@ -22,7 +23,7 @@
                 case "GET":
                     switch(true) {
                         // -- get single user by id
-                        case preg_match('/\/api\/emissions\/id\/[1-9]/', $uri):
+                        case preg_match('/\/api\/emissions\/id\/d{0,3}/', $uri):
                             // this is the last parameter in the url
                             $param = basename($uri);    
 
@@ -76,9 +77,9 @@
                     $sql->bindValue(":totalEmission",  $model["imgUrl"],  PDO::PARAM_INT);
 
                     $sql->execute();
-                    // if($sql->rowCount() > 0) {
-                    //     $this->sdk->firestoreAdd('emissions', $model["userName"]);
-                    // }
+                    if($sql->rowCount() > 0) {
+                        $this->sdk->firestoreAdd('emissions', $model["userName"]);
+                    }
 
                     break;
             }

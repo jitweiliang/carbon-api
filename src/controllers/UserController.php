@@ -25,19 +25,8 @@
                 // ============================ G E T ==============================
                 case "GET":
                     switch(true) {
-                        // -- get all users
-                        case preg_match('/\/api\/users$/', $uri):
-                            $stmt = "select id as id, user_name as userName, user_email as userEmail, photo_url as photoUrl, about_me as aboutMe 
-                                        from carbon_users";
-                            $sql = $this->pdo->prepare($stmt);
-                            $sql->execute();
-                            
-                            $data = $sql->fetchAll(PDO::FETCH_OBJ);
-                            echo json_encode($data);    
-
-                            break;
                         // -- get single user by id
-                        case preg_match('/\/api\/users\/id\/[1-9]/', $uri):
+                        case preg_match('/\/api\/users\/id\/d{0,3}/', $uri):
                             // this is the last parameter in the url
                             $param = basename($uri);    
 
