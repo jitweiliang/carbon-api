@@ -46,18 +46,19 @@
                 case "POST":
                     $model = (array) json_decode(file_get_contents("php://input"), true);
                     
-                    $stmt = "insert into carbon_bulletins (user_id, title, message, img_url)
-                                        values (:userId, :title, :message, :imgUrl)";
+                    $stmt = "insert into carbon_bulletins (user_id, title, message)
+                                        values (:userId, :title, :message)";
 
                     $sql = $this->pdo->prepare($stmt);
-                    $sql->bindValue(":userId",  $model["userId"], PDO::PARAM_STR);
-                    $sql->bindValue(":title",   $model["title"], PDO::PARAM_STR);
+                    $sql->bindValue(":userId",  $model["userId"],  PDO::PARAM_STR);
+                    $sql->bindValue(":title",   $model["title"],   PDO::PARAM_STR);
                     $sql->bindValue(":message", $model["message"], PDO::PARAM_STR);
-                    $sql->bindValue(":imgUrl",  $model["imgUrl"], PDO::PARAM_STR);
 
                     $sql->execute();
+                    // -- make sure row is successfully inserted
                     if($sql->rowCount() > 0) {
-                        $this->sdk->firestoreAdd('bulletins', $model["userName"]);
+                        // push new updates (row) to firestore
+                        $this->sdk->firestoreAdd('bulletins', $model["userId"]);
                     }
 
                     break;

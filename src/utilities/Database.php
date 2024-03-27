@@ -35,7 +35,6 @@
         
         // public function getPDOObject(): PDO {
         //     $this->conn = null;
-
         //     try { 
         //         // 'mysql:dbname=carbon-db;unix_socket=/cloudsql/carbon-project-9a417:asia-southeast1:carbon-db'
                 
@@ -45,7 +44,6 @@
         //     catch(PDOException $e) {
         //         echo 'Connection Error: ' . $e->getMessage();
         //     }
-
         //     return $this->conn;
         // }
   }

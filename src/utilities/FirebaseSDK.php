@@ -26,50 +26,47 @@
         // Factory is a FUNCTIONALITY that CREATES AN OBJECT that then CREATES A CONNECTION to Firebase USING our Firebase.json credentials
         // Factory also comes with A BUNCH OF METHODS which we will use later in several of the functions here
         public function __construct() {
+            // the json file (a key file) is generated from the firebase account to access firebase admin processes
             $this->factory = (new Factory) -> withServiceAccount(('./carbon-project-9a417-firebase.json'));
         }
 
         // ======== FIRESTORE
-        public function firestoreGet($collName) {
-            $firestore = $this->factory->createFirestore();
+        // public function firestoreGet($collName) {
+        //     $firestore = $this->factory->createFirestore();
 
-            $database = $firestore->database();
-            $collection = $database->collection("{$collName}");
-            $documents = $collection->documents();
+        //     $database = $firestore->database();
+        //     $collection = $database->collection("{$collName}");
+        //     $documents = $collection->documents();
 
-            $bulletinArray = [];
-            foreach($documents as $doc) {
-                $postedByData = $doc->data()["postedBy"];
-                $postedDateData = $doc->data()["postedDate"];
+        //     $bulletinArray = [];
+        //     foreach($documents as $doc) {
+        //         $postedByData = $doc->data()["postedBy"];
+        //         $postedDateData = $doc->data()["postedDate"];
 
-                array_push($bulletinArray,
-                ['postedBy' => $doc->data()["postedBy"], 'postedDate' => $doc->data()['postedDate']]
-                );
-            }
+        //         array_push($bulletinArray,
+        //         ['postedBy' => $doc->data()["postedBy"], 'postedDate' => $doc->data()['postedDate']]
+        //         );
+        //     }
 
-            return $bulletinArray;
-        }
+        //     return $bulletinArray;
+        // }
         public function firestoreAdd($collName, $postedBy) {
+            // create an instance of firestore
             $firestore = $this->factory->createFirestore();
 
             $database = $firestore->database();
+            // must specify the name of the colection to be used
             $collection = $database->collection("{$collName}");
             
+            // -- just insert a new row with the current datetime (serverTimestamp)
             $docRef = $collection->add(
                 ['postedBy' => $postedBy, 'postedDate'=>FieldValue::serverTimestamp()]
             );
         }
 
         // ======== CloudStorage
-        public function storageToServer($fileName) {
-            
-        }
-
-        public function storageGetImage($fileName) {
-
-        }
-
         public function storageStoreImage($imgTmpName, $imgFileName) {
+            // create an instance of cloud storage
             $storage = $this->factory->createStorage();
             $bucket = $storage->getBucket();
 
@@ -81,7 +78,7 @@
 
             $newImageFileName = "profile_{$prefix}.{$extension}";
     
-
+            // --- $imgTmpName is a random generated name for temporary files uploaded to php
             $stream = fopen($imgTmpName, 'r+');
             $result = $bucket->upload($stream, ['name' => $newImageFileName]);
 

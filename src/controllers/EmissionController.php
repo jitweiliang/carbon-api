@@ -42,12 +42,125 @@
                             echo json_encode($data);    
 
                             break;
+                        // --- get last emission submission by user
+                        case preg_match('/\/api\/emissions\/history\/user\/d{0,3}/', $uri):
+                                // this is the last parameter in the url
+                                $param = basename($uri);    
+    
+                                // -- 1. get array of days
+                                $stmt = "select submitted_date as submittedDate from carbon_emissions where user_id = :userId
+                                            order by id desc limit 5";
+                                $sql = $this->pdo->prepare($stmt);
+                                $sql->bindValue(":userId", $param, PDO::PARAM_INT);
+                                $sql->execute();
+            
+                                $data = $sql->fetchAll(PDO::FETCH_OBJ);
+                                $daySummary = array();
+                                if(sizeof($data) > 0) {
+                                    foreach($data as $dat) {
+                                        array_push($daySummary, $dat->submittedDate);
+                                    }                                    
+                                }
+                                
+                                // -- 2. get array of househould
+                                $stmt = "select household from carbon_emissions where user_id = :userId 
+                                            order by id desc limit 5";
+    
+                                $sql = $this->pdo->prepare($stmt);
+                                $sql->bindValue(":userId", $param, PDO::PARAM_INT);
+                                $sql->execute();
+                                
+                                $data = $sql->fetchAll(PDO::FETCH_OBJ);
+                                $householdSummary = array();
+                                if(sizeof($data) > 0) {
+                                    foreach($data as $dat) {
+                                        array_push($householdSummary, $dat->household);
+                                    }                                    
+                                }
+                                // -- 2. get array of transportation
+                                $stmt = "select transportation from carbon_emissions where user_id = :userId 
+                                            order by id desc limit 5";
+    
+                                $sql = $this->pdo->prepare($stmt);
+                                $sql->bindValue(":userId", $param, PDO::PARAM_INT);
+                                $sql->execute();
+                                
+                                $data = $sql->fetchAll(PDO::FETCH_OBJ);
+                                $transportationSummary = array();
+                                if(sizeof($data) > 0) {
+                                    foreach($data as $dat) {
+                                        array_push($transportationSummary, $dat->transportation);
+                                    }                                    
+                                }
+                                // -- 2. get array of transportation
+                                $stmt = "select food from carbon_emissions where user_id = :userId 
+                                            order by id desc limit 5";
+    
+                                $sql = $this->pdo->prepare($stmt);
+                                $sql->bindValue(":userId", $param, PDO::PARAM_INT);
+                                $sql->execute();
+                                
+                                $data = $sql->fetchAll(PDO::FETCH_OBJ);
+                                $foodSummary = array();
+                                if(sizeof($data) > 0) {
+                                    foreach($data as $dat) {
+                                        array_push($foodSummary, $dat->food);
+                                    }                                    
+                                }
+
+                                $totalSummary = array(
+                                    "date"          =>$daySummary,
+                                    "household"     =>$householdSummary,
+                                    "transportation"=>$transportationSummary,
+                                    "food"          =>$foodSummary
+                                );
+                                echo json_encode($totalSummary);
+        
+                                break;                    
+                        // -- get average of emissions categories
+                        case preg_match('/\/api\/emissions\/average$/', $uri):
+                            $stmt = "select count(*) as emissionCount, sum(total_emission) as totalEmission, avg(total_emission) as avgEmission from carbon_emissions";
+
+                            $sql = $this->pdo->prepare($stmt);
+                            $sql->execute();
+                            
+                            $data = $sql->fetch(PDO::FETCH_ASSOC);
+
+                            echo json_encode($data);
+
+                            break;                            
+                        // -- get average of emissions categories
+                        case preg_match('/\/api\/emissions\/category\/average$/', $uri):
+                            $stmt = "select avg(household) as household, avg(transportation) as transportation, avg(food) as food from carbon_emissions";
+
+                            $sql = $this->pdo->prepare($stmt);
+                            $sql->execute();
+                            
+                            $data = $sql->fetch(PDO::FETCH_ASSOC);
+
+                            // php => array("household"=>101607.1429", "transportation":"3581.2857", "food":"895.3571")
+                            // js  => { "household": "101607.1429", "transportation": "3581.2857", "food": "895.3571" }
+
+                            $summary = array();
+                            if(sizeof($data) > 0) {
+                                array_push($summary, array("name"=>"household",      "y"=>(int)$data["household"]));
+                                array_push($summary, array("name"=>"transportation", "y"=>(int)$data["transportation"]));
+                                array_push($summary, array("name"=>"food",           "y"=>(int)$data["food"]));
+                            }
+
+                            // php => array(array("name"=>"household", "y"=>101607.1429), array("name"=>"transportation", "y"=>3581.2857), array("name"=>"food", "y"=>8953571);
+                            // js  => [{"name": "household", "y": 101607.1429}, {"name": "transportation", "y": 3581.2857}, {"name": "food", "y": 895.3571}];
+
+                            echo json_encode($summary);    
+
+                            break;                            
+                        // -- get emissions order by total_emissions
                         case preg_match('/\/api\/emissions\/ranking$/', $uri):
                             $stmt = "select t1.id as id, t2.id as userId, t2.user_name as userName, t2.user_email as email, t2.photo_url as photoUrl,
                                         t1.household as household, t1.transportation as transportation, t1.food as food, t1.total_emission as totalEmission, t1.submitted_date as submittedDate 
                                         from carbon_emissions t1
                                             left join carbon_users t2 on t1.user_id = t2.id
-                                        order by total_emission limit 12";
+                                        order by total_emission limit 10";
 
                             $sql = $this->pdo->prepare($stmt);
                             $sql->execute();
@@ -79,7 +192,9 @@
                     $sql->execute();                   
                     $lastId = $this->pdo->lastInsertId();
 
+                    // -- make sure row is successfully inserted
                     if($sql->rowCount() > 0) {
+                        // push new updates (row) to firestore
                         $this->sdk->firestoreAdd('emissions', $model["userId"]);
                     }
 
