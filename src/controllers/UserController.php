@@ -2,9 +2,7 @@
     require "./src/utilities/Database.php";
     require "./src/utilities/FirebaseSDK.php";
 
-    require "IController.php";
-
-    class UserController implements IController
+    class UserController
     {
         private $pdo;
         private $sdk;
@@ -14,7 +12,8 @@
             // --- get a new PDO object for mysql connection
             $db = new Database();
             $this->pdo = $db->getPDOObject();
-
+            
+            // ---- get instance of firebase sdk
             $this->sdk = new FirebaseSDK();
         }
 
@@ -116,26 +115,25 @@
                             break; 
                         // -- upload images
                         case preg_match('/\/api\/users\/img$/', $uri):
-                                $imageFileName = $_FILES['imgfile']['name'];
-                                $imageTmpName = $_FILES['imgfile']['tmp_name'];
+                            $imageFileName = $_FILES['imgfile']['name'];
+                            $imageTmpName = $_FILES['imgfile']['tmp_name'];
 
-                                $userEmail = $_POST["userEmail"];
+                            $userEmail = $_POST["userEmail"];
    
-                                $imageFileName = $this->sdk->storageStoreImage($imageTmpName, $imageFileName);
+                            $imageFileName = $this->sdk->storageStoreImage($imageTmpName, $imageFileName);
 
-                                // ---
-                                if($imageFileName) {
-                                    // https://storage.googleapis.com/<<bucket name>>/5813testload.png
-                                    $photoUrl = "https://storage.googleapis.com/carbon-project-9a417.appspot.com/{$imageFileName}";
-                                    $stmt = "update carbon_users set photo_url = :photoUrl where user_email = :userEmail";
+                            if($imageFileName) {
+                                // https://storage.googleapis.com/<<bucket name>>/5813testload.png
+                                $photoUrl = "https://storage.googleapis.com/carbon-project-9a417.appspot.com/{$imageFileName}";
+                                $stmt = "update carbon_users set photo_url = :photoUrl where user_email = :userEmail";
                 
-                                    $sql = $this->pdo->prepare($stmt);
-                                    $sql->bindValue(":photoUrl",  $photoUrl, PDO::PARAM_STR);
-                                    $sql->bindValue(":userEmail", $userEmail, PDO::PARAM_STR);
-                                    $sql->execute();
-                                }
+                                $sql = $this->pdo->prepare($stmt);
+                                $sql->bindValue(":photoUrl",  $photoUrl, PDO::PARAM_STR);
+                                $sql->bindValue(":userEmail", $userEmail, PDO::PARAM_STR);
+                                $sql->execute();
+                            }
 
-                                break;
+                            break;
                                
                         // -- upsert user profile
                         case preg_match('/\/api\/users$/', $uri):
@@ -154,7 +152,7 @@
                                                     values (:userName, :userEmail, :provider, :token)";
 
                                 $sql = $this->pdo->prepare($stmt);
-                                $sql->bindValue(":userName",  $model["userName"],  PDO::PARAM_STR);
+                                $sql->bindValue(":userName",  $model["userName"] ?? "",  PDO::PARAM_STR);
                                 $sql->bindValue(":userEmail", $model["userEmail"], PDO::PARAM_STR);
                                 $sql->bindValue(":provider",  $model["provider"],  PDO::PARAM_STR);
                                 $sql->bindValue(":token",     $model["token"],     PDO::PARAM_STR);
@@ -178,12 +176,20 @@
                                 throw new Exception("Duplicte Emails detected !!!");
                             }
 
+                            // --- now will return the user details if all upserts are successful
+                            $stmt = "select id as userId, user_name as userName, user_email as userEmail, user_address1 as userAddress1, user_address2 as userAddress2, 
+                                        photo_url as photourl, about_me as aboutMe from carbon_users where user_email = :userEmail";
+                            $sql = $this->pdo->prepare($stmt);
+                            $sql->bindValue(":userEmail", $model["userEmail"], PDO::PARAM_STR);
+
+                            $sql->execute();                           
+                            $user = $sql->fetch(PDO::FETCH_OBJ);
+
+                            echo json_encode($user);
                             break;
                     }
+
                     break;
-                // ========================== E R R O R  ===========================
-                default:
-                    throw new Exception("Invalid User Controller request");
             }            
         }
     }

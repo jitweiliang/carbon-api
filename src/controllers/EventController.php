@@ -1,8 +1,8 @@
 <?php
     require "./src/utilities/Database.php";
-    require "IController.php";
+    require "./src/utilities/FirebaseSDK.php";
 
-    class EventController implements IController
+    class EventController
     {
         private $pdo;
 
@@ -11,6 +11,9 @@
             // --- get a new PDO object for mysql connection
             $db = new Database();
             $this->pdo = $db->getPDOObject();
+            
+            // ---- get instance of firebase sdk
+            $this->sdk = new FirebaseSDK();
         }
 
 
@@ -44,10 +47,6 @@
                             break;
                     }
 
-                    break;
-                // ========================== E R R O R  ===========================
-                default:
-                    throw new Exception("Invalid User Controller request");
                     break;
             }            
         }

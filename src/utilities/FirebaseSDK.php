@@ -1,5 +1,4 @@
 <?php
-
     require './vendor/autoload.php';
 
     use Kreait\Firebase\Factory;
@@ -16,8 +15,8 @@
 
     // -- Messaging API
     use Kreait\Firebase\Contract\Messaging;
-    use Kreait\Firebase\Messagin\Notification;
-    use Kreait\Firebase\Messagin\CloudMessage;
+    use Kreait\Firebase\Messaging\Notification;
+    use Kreait\Firebase\Messaging\CloudMessage;
 
     class FirebaseSDK {
         private $factory;
@@ -30,45 +29,26 @@
             $this->factory = (new Factory) -> withServiceAccount(('./carbon-project-9a417-firebase.json'));
         }
 
-        // ======== FIRESTORE
-        // public function firestoreGet($collName) {
-        //     $firestore = $this->factory->createFirestore();
 
-        //     $database = $firestore->database();
-        //     $collection = $database->collection("{$collName}");
-        //     $documents = $collection->documents();
-
-        //     $bulletinArray = [];
-        //     foreach($documents as $doc) {
-        //         $postedByData = $doc->data()["postedBy"];
-        //         $postedDateData = $doc->data()["postedDate"];
-
-        //         array_push($bulletinArray,
-        //         ['postedBy' => $doc->data()["postedBy"], 'postedDate' => $doc->data()['postedDate']]
-        //         );
-        //     }
-
-        //     return $bulletinArray;
-        // }
+        // ======== Firestore
         public function firestoreAdd($collName, $postedBy) {
             // create an instance of firestore
-            $firestore = $this->factory->createFirestore();
+            $fireStore = $this->factory->createFirestore();
 
-            $database = $firestore->database();
+            $fireDatabase = $fireStore->database();
             // must specify the name of the colection to be used
-            $collection = $database->collection("{$collName}");
+            $fireCollection = $fireDatabase->collection("{$collName}");
             
             // -- just insert a new row with the current datetime (serverTimestamp)
-            $docRef = $collection->add(
+            $docRef = $fireCollection->add(
                 ['postedBy' => $postedBy, 'postedDate'=>FieldValue::serverTimestamp()]
             );
         }
-
         // ======== CloudStorage
         public function storageStoreImage($imgTmpName, $imgFileName) {
             // create an instance of cloud storage
-            $storage = $this->factory->createStorage();
-            $bucket = $storage->getBucket();
+            $fireStorage = $this->factory->createStorage();
+            $fireBucket = $fireStorage->getBucket();
 
             
             // -- generate a random filename for image to be uploaded to gcloud
@@ -80,8 +60,24 @@
     
             // --- $imgTmpName is a random generated name for temporary files uploaded to php
             $stream = fopen($imgTmpName, 'r+');
-            $result = $bucket->upload($stream, ['name' => $newImageFileName]);
+            $result = $fireBucket->upload($stream, ['name' => $newImageFileName]);
 
             return $newImageFileName;
+        }
+        // ========== Push Notification
+        public function sendNotificationByDevice($notificationsArray) {
+            // $noficationsArray = [{token: token, title: title, body: body}]
+            $fireMessaging = $this->factory->createMessaging();
+
+            foreach($notificationsArray as $notify) {
+                $deviceToken = $notify->token;
+
+                $message = CloudMessage::withTarget('token', $deviceToken)
+                                ->withNotification(Notification::create($notify->title, $notify->body))
+                                ->withData(['key' => 'value']);
+                $fireMessaging->send($message);
+            }
+
+            return 1;
         }
     }

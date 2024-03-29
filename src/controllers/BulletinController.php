@@ -1,25 +1,25 @@
 <?php
-
     require "./src/utilities/Database.php";
     require "./src/utilities/FirebaseSDK.php";
     
-    require "IController.php";
-
-    class BulletinController implements IController 
+    class BulletinController
     {
         private $pdo;
         private $sdk;
 
         public function __construct() {
+            // --- get a new PDO object for mysql connection
             $db = new Database();
             $this->pdo = $db->getPDOObject();
-
+            
+            // ---- get instance of firebase sdk
             $this->sdk = new FirebaseSDK();
         }
 
         public function processRequest(string $verb, ?string $uri): void 
         {
             switch ($verb) {
+                // ============================ G E T ==============================
                 case "GET":
                     switch(true) {
                         // -- get all latest bulletins (top 10)
@@ -36,13 +36,13 @@
                             echo json_encode($data);    
 
                             break;
-                        // --- if requests do not match any api
+                        // --- if requests do not match any get api
                         default:
                             throw new Exception("Invalid get request !!!");
                             break;
-                        }
-                        
+                        }                        
                     break;
+                // ============================ P O S T ============================
                 case "POST":
                     $model = (array) json_decode(file_get_contents("php://input"), true);
                     
@@ -57,8 +57,10 @@
                     $sql->execute();
                     // -- make sure row is successfully inserted
                     if($sql->rowCount() > 0) {
-                        // push new updates (row) to firestore
+                        // -- push new updates (row) to firestore
                         $this->sdk->firestoreAdd('bulletins', $model["userId"]);
+                        // -- send notifications to all users
+                        
                     }
 
                     break;

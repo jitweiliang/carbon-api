@@ -1,25 +1,25 @@
 <?php
-
     require "./src/utilities/Database.php";
     require "./src/utilities/FirebaseSDK.php";
     
-    require "IController.php";
-
-    class EmissionController implements IController 
+    class EmissionController
     {
         private $pdo;
         private $sdk;
 
         public function __construct() {
+            // --- get a new PDO object for mysql connection
             $db = new Database();
             $this->pdo = $db->getPDOObject();
-
+            
+            // ---- get instance of firebase sdk
             $this->sdk = new FirebaseSDK();
         }
 
         public function processRequest(string $verb, ?string $uri): void 
         {
             switch ($verb) {
+                // ============================ G E T ==============================
                 case "GET":
                     switch(true) {
                         // -- get single user by id
@@ -154,7 +154,7 @@
                             echo json_encode($summary);    
 
                             break;                            
-                        // -- get emissions order by total_emissions
+                        // -- get emissions ranking / order by total_emissions
                         case preg_match('/\/api\/emissions\/ranking$/', $uri):
                             $stmt = "select t1.id as id, t2.id as userId, t2.user_name as userName, t2.user_email as email, t2.photo_url as photoUrl,
                                         t1.household as household, t1.transportation as transportation, t1.food as food, t1.total_emission as totalEmission, t1.submitted_date as submittedDate 
@@ -175,8 +175,12 @@
                             break;
                         }
                         
+                    
                     break;
+
+                // ============================ P O S T ============================                
                 case "POST":
+                    // --- insert new emission calculation
                     $model = (array) json_decode(file_get_contents("php://input"), true);
                     
                     $stmt = "insert into carbon_emissions (user_id, household, transportation, food, total_emission)
@@ -189,15 +193,18 @@
                     $sql->bindValue(":food",           $model["food"],           PDO::PARAM_INT);
                     $sql->bindValue(":totalEmission",  $model["totalEmission"],  PDO::PARAM_INT);
 
-                    $sql->execute();                   
+                    $sql->execute();
+                    // -- get newest id
                     $lastId = $this->pdo->lastInsertId();
 
                     // -- make sure row is successfully inserted
                     if($sql->rowCount() > 0) {
-                        // push new updates (row) to firestore
+                        // -- push new updates (row) to firestore
                         $this->sdk->firestoreAdd('emissions', $model["userId"]);
+                        // -- send notification to users
                     }
 
+                    // -- to return lastest insert id so the certificate can be displayed
                     echo json_encode(array("lastId" => $lastId));
 
                     break;

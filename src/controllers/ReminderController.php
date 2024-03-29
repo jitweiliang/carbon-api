@@ -1,17 +1,21 @@
 <?php
     require "./src/utilities/Database.php";
+    require "./src/utilities/FirebaseSDK.php";
 
-    require "IController.php";
 
-    class ReminderController implements IController
+    class ReminderController
     {
         private $pdo;
+        private $sdk;
 
         public function __construct()
         {
             // --- get a new PDO object for mysql connection
             $db = new Database();
             $this->pdo = $db->getPDOObject();
+            
+            // ---- get instance of firebase sdk
+            $this->sdk = new FirebaseSDK();
         }
 
 
@@ -46,22 +50,25 @@
                     break;
                 // ============================ G E T ==============================
                 case "PUT":
-                        switch(true) {
-                            case preg_match('/\/api\/reminders\/before$/', $uri):
-                                $model = (array) json_decode(file_get_contents("php://input"), true);
+                    switch(true) {
+                        case preg_match('/\/api\/reminders\/before$/', $uri):
+                            $model = (array) json_decode(file_get_contents("php://input"), true);
                     
-                                $stmt = "update carbon_reminders set remind_before = :remindBefore, reminder_date = :reminderDate where id = :reminderId"; 
+                            $stmt = "update carbon_reminders set remind_before = :remindBefore, reminder_date = :reminderDate where id = :reminderId"; 
                                 
-                                $sql = $this->pdo->prepare($stmt);
-                                $sql->bindValue(":remindBefore", $model["remindBefore"], PDO::PARAM_STR);
-                                $sql->bindValue(":reminderDate", $model["reminderDate"], PDO::PARAM_STR);
-                                $sql->bindValue(":reminderId",   $model["reminderId"],   PDO::PARAM_INT);
+                            $sql = $this->pdo->prepare($stmt);
+                            $sql->bindValue(":remindBefore", $model["remindBefore"], PDO::PARAM_STR);
+                            $sql->bindValue(":reminderDate", $model["reminderDate"], PDO::PARAM_STR);
+                            $sql->bindValue(":reminderId",   $model["reminderId"],   PDO::PARAM_INT);
                                     
-                                $sql->execute();
-                                echo json_encode($sql->rowCount());
-                            }
+                            $sql->execute();
+                            echo json_encode($sql->rowCount());
+
+                            break;
+                        }
                     
-                        break;
+                    
+                    break;
                 // ======================== D E L E T E  ===========================
                 case "DELETE":
                     switch(true) {
@@ -81,25 +88,89 @@
                     break;
                 // ============================ P O S T ============================
                 case "POST":
-                    // --- get json data from request
-                    $model = (array) json_decode(file_get_contents("php://input"), true);
-                    
-                    $stmt = "insert into carbon_reminders (user_id, event_id, remind_before, reminder_date) 
-                                values (:userId, :eventId, :remindBefore, :reminderDate)";
-                    
-                    $sql = $this->pdo->prepare($stmt);
-                    $sql->bindValue(":userId",       $model["userId"],       PDO::PARAM_INT);
-                    $sql->bindValue(":eventId",      $model["evtId"],        PDO::PARAM_INT);
-                    $sql->bindValue(":remindBefore", $model["remindBefore"], PDO::PARAM_STR);
-                    $sql->bindValue(":reminderDate", $model["reminderDate"], PDO::PARAM_STR);
-                        
-                    $sql->execute();
-                    echo json_encode($sql->rowCount());
+                    switch(true) {
+                        case preg_match('/\/api\/reminders$/', $uri):
+                            // --- get json data from request
+                            $model = (array) json_decode(file_get_contents("php://input"), true);
+                            
+                            $stmt = "insert into carbon_reminders (user_id, event_id, remind_before, reminder_date) 
+                                        values (:userId, :eventId, :remindBefore, :reminderDate)";
+                            
+                            $sql = $this->pdo->prepare($stmt);
+                            $sql->bindValue(":userId",       $model["userId"],       PDO::PARAM_INT);
+                            $sql->bindValue(":eventId",      $model["evtId"],        PDO::PARAM_INT);
+                            $sql->bindValue(":remindBefore", $model["remindBefore"], PDO::PARAM_STR);
+                            $sql->bindValue(":reminderDate", $model["reminderDate"], PDO::PARAM_STR);
+                                
+                            $sql->execute();
+                            echo json_encode($sql->rowCount());
+
+                            break;
+                        case preg_match('/\/api\/reminders\/event\/alerts$/', $uri):
+                            $stmt = "select t3.token AS userToken, t2.event_name AS eventName, t2.start_date eventStartDate
+                                        from carbon_reminders t1
+                                            left join carbon_events t2 ON t1.event_id = t2.id
+                                            left join carbon_users t3 ON t1.user_id = t3.id
+                                        where t1.reminder_date >= NOW()";
+                            
+                            $sql = $this->pdo->prepare($stmt);
+                            $sql->execute();
+                                
+                            // -- 1. using array of objects
+                            $data = $sql->fetchAll(PDO::FETCH_OBJ);
+                            $notificationsArray = array();
+                            foreach($data as $dat) {
+                                $notify = new stdClass();
+                                $notify->token = $dat->userToken;
+                                $notify->eventName = $dat->eventName;
+                                $notify->startDate = $dat->eventStartDate;
+                                array_push($notificationsArray, $notify);
+                            }
+                            // -- 2. using array of associative arrays
+                            // $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+                            // $notificationsArray = array();
+                            // foreach($data as $dat) {
+                            //     array_push($notificationsArray, 
+                            //         array("token"=>$dat["userToken"], "event"=>$dat["eventName"], "startDate"=>$dat["eventStartDate"]));
+                            // }
+
+                            $this->sdk->sendNotifications($notificationsArray);
+
+                            break;
+                        case preg_match('/\/api\/reminders\/activity\/alerts$/', $uri):
+                            $stmt = "select t3.token AS userToken, t2.event_name AS eventName, t2.start_date eventStartDate
+                            from carbon_reminders t1
+                                left join carbon_events t2 ON t1.event_id = t2.id
+                                left join carbon_users t3 ON t1.user_id = t3.id
+                            where t1.reminder_date >= NOW()";
+                
+                            $sql = $this->pdo->prepare($stmt);
+                            $sql->execute();
+                                
+                            // -- 1. using array of objects
+                            $data = $sql->fetchAll(PDO::FETCH_OBJ);
+                            $notificationsArray = array();
+                            foreach($data as $dat) {
+                                $notify = new stdClass();
+                                $notify->token = $dat->userToken;
+                                $notify->eventName = $dat->eventName;
+                                $notify->startDate = $dat->eventStartDate;
+                                array_push($notificationsArray, $notify);
+                            }
+                            // -- 2. using array of associative arrays
+                            // $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+                            // $notificationsArray = array();
+                            // foreach($data as $dat) {
+                            //     array_push($notificationsArray, 
+                            //         array("token"=>$dat["userToken"], "event"=>$dat["eventName"], "startDate"=>$dat["eventStartDate"]));
+                            // }
+
+                            $this->sdk->sendNotifications($notificationsArray);
+
+                            break;
+                    }
 
                     break;
-                // ========================== E R R O R  ===========================
-                default:
-                    throw new Exception("Invalid User Controller request");
             }            
         }
     }   

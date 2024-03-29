@@ -1,8 +1,7 @@
 <?php
-    require "IController.php";
     require "./src/utilities/FirebaseSDK.php";
 
-    class TestController implements IController {
+    class TestController {
         private $sdk;
 
         public function __construct() {
@@ -20,10 +19,7 @@
                         case preg_match('/\/api\/test\/firestore$/', $uri):
                             $data = $this->sdk->firestoreGet("bulletins");
                             echo json_encode($data);
-
                             break;
-
-                        case preg_match('/\/api\/test\/storage\/[^\/]+/', $uri):
                     }
                     break;
 
@@ -31,22 +27,19 @@
                     switch(true) {
                         case preg_match('/\/api\/test\/firestore$/', $uri):
                             $model = (array) json_decode(file_get_contents("php://input"), true);
-
                             $this->sdk->firestoreAdd("bulletins", $model["postedBy"]);
                             break;
-
                         case preg_match('/\/api\/test\/images$/', $uri):
                             $data = $this->sdk->firestoreGet("bulletins");
                             echo json_encode($data);
-
                             break;
-
                         case preg_match('/\/api\/test\/messaging\/token\/[^\/]+/', $uri):
+                            $data = $this->sdk->sendNotification("123", "titletitletitle", "messagemessagemessage");
 
+                            echo json_encode($data);
                             break;
                     }
                     break;
-
                 default:
                     http_response_code(405);
                     header("Allow: GET, PATCH, DELETE");

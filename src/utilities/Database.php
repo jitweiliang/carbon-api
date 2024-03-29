@@ -1,4 +1,6 @@
 <?php 
+    // https://www.php.net/manual/en/pdo.connections.php
+
     class Database {
         // This is the COMPANY one
         private $host     = '103.3.173.137';
@@ -26,7 +28,8 @@
         }
 
 
-        // --- 3. ==================== cloud sql via app engine ==================== --- //
+
+        // --- 2. ==================== cloud sql via app engine ==================== --- //
         // private $conn;
         // private $host       = '/cloudsql/carbon-project-9a417:asia-southeast1:carbon-db';
         // private $username   = "root";
