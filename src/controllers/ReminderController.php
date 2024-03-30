@@ -106,24 +106,25 @@
                             echo json_encode($sql->rowCount());
 
                             break;
-                        case preg_match('/\/api\/reminders\/event\/alerts$/', $uri):
+                        case preg_match('/\/api\/reminders\/events\/alert$/', $uri):
                             $stmt = "select t3.token AS userToken, t2.event_name AS eventName, t2.start_date eventStartDate
                                         from carbon_reminders t1
                                             left join carbon_events t2 ON t1.event_id = t2.id
                                             left join carbon_users t3 ON t1.user_id = t3.id
-                                        where t1.reminder_date >= NOW()";
+                                        where t1.reminder_date <= NOW() and t2.start_date >= NOW()";
                             
                             $sql = $this->pdo->prepare($stmt);
                             $sql->execute();
                                 
                             // -- 1. using array of objects
                             $data = $sql->fetchAll(PDO::FETCH_OBJ);
+
                             $notificationsArray = array();
                             foreach($data as $dat) {
                                 $notify = new stdClass();
                                 $notify->token = $dat->userToken;
                                 $notify->eventName = $dat->eventName;
-                                $notify->startDate = $dat->eventStartDate;
+                                $notify->body = "you have a reminder {$dat->eventStartDate}";
                                 array_push($notificationsArray, $notify);
                             }
                             // -- 2. using array of associative arrays
@@ -153,8 +154,8 @@
                             foreach($data as $dat) {
                                 $notify = new stdClass();
                                 $notify->token = $dat->userToken;
-                                $notify->eventName = $dat->eventName;
-                                $notify->startDate = $dat->eventStartDate;
+                                $notify->title = $dat->eventName;
+                                $notify->body = $dat->eventStartDate;
                                 array_push($notificationsArray, $notify);
                             }
                             // -- 2. using array of associative arrays

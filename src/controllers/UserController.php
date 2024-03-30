@@ -26,23 +26,24 @@
                     switch(true) {
                         // -- get users summary
                         case preg_match('/\/api\/users\/summary$/', $uri):
-                            // this is the last parameter in the url
-                            $param = basename($uri);    
 
                             // 1 -- get total users
                             $stmt = "select count(*) as totalUsers from carbon_users";
                             $sql = $this->pdo->prepare($stmt);
                             $sql->execute();                           
-                            $data1 = $sql->fetch(PDO::FETCH_OBJ);
+                            $data1 = $sql->fetch(PDO::FETCH_OBJ);       // $data1->totalUsers == 4
+
                             // 2 -- get total active users current month
                             $stmt = "select count(distinct(user_id)) as activeUsers 
                                         from carbon_emissions where month(submitted_date) = month(now()) and year(submitted_date) = year(now())";
                             $sql = $this->pdo->prepare($stmt);
                             $sql->execute();                           
-                            $data2 = $sql->fetch(PDO::FETCH_OBJ);
+                            $data2 = $sql->fetch(PDO::FETCH_OBJ);       // $data2->activeUses == 3
 
 
-                            echo json_encode(array("totalUsers"=>$data1->totalUsers, "activeUsers"=>$data2->activeUsers));
+                            echo json_encode(
+                                array("totalUsers"=>$data1->totalUsers, "activeUsers"=>$data2->activeUsers));
+                            // ["totalUsers"=>$data1->totalUsers, "activeUsers"=>$data2->activeUsers]    
 
                             break;
                         // -- get single user by id

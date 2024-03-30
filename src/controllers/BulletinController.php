@@ -23,7 +23,9 @@
                 case "GET":
                     switch(true) {
                         // -- get all latest bulletins (top 10)
-                        case preg_match('/\/api\/bulletins\/latest$/', $uri):
+                        case preg_match('/\/api\/bulletins\/latest\/d{0,3}/', $uri):
+                            $param = basename($uri);
+                            
                             $stmt = "select t1.id as id, t2.id as userId, t2.user_name as userName, 
                                         t1.title as title, t1.message as message, t1.post_date as postDate 
                                         from carbon_bulletins t1 

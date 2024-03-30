@@ -28,23 +28,23 @@
     $controller = null;
     if(isset($requestVerb) && isset($requestURL)) {
         try {
-            if(preg_match("/\/api\/users$/", $requestURL)) {
+            if(preg_match("/\/api\/users/", $requestURL)) {
                 require "./src/controllers/UserController.php";
                 $controller = new UserController();
             }
-            else if(preg_match("/\/api\/bulletins$/", $requestURL)) {
+            else if(preg_match("/\/api\/bulletins/", $requestURL)) {
                 require "./src/controllers/BulletinController.php";
                 $controller = new BulletinController();
             }
-            else if(preg_match("/\/api\/events$/", $requestURL)) {
+            else if(preg_match("/\/api\/events/", $requestURL)) {
                 require "./src/controllers/EventController.php";
                 $controller = new EventController();
             }   
-            else if(preg_match("/\/api\/reminders$/", $requestURL)) {
+            else if(preg_match("/\/api\/reminders/", $requestURL)) {
                 require "./src/controllers/ReminderController.php";
                 $controller = new ReminderController();
             }
-            else if(preg_match("/\/api\/emissions$/", $requestURL)) {
+            else if(preg_match("/\/api\/emissions/", $requestURL)) {
                 require "./src/controllers/EmissionController.php";
                 $controller = new EmissionController();
             }
@@ -55,7 +55,7 @@
            
 
             // --- process controller requests
-            if ($controller) {
+            if (isset($controller)) {
                 $controller->processRequest($requestVerb, $requestURL);
             }
             else throw new Exception("no such controllers");
@@ -69,7 +69,7 @@
         catch(Exception $ex) {
             header("HTTP/1.1 500 Internal Server Error");
             // die(json_encode(array("message"=>"{$ex->getMessage()}")));
-            die(json_encode(array("message" => "{$ex->getMessage()}")));
+            die(json_encode(array("message" => "{$ex->getMessage()}")));    // ["message"=>]
         }        
     }
     

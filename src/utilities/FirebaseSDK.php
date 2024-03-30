@@ -1,5 +1,5 @@
 <?php
-    require './vendor/autoload.php';
+    require './vendor/autoload.php';        // this is mandatory as per firebase admin sdk requirement
 
     use Kreait\Firebase\Factory;
     use Kreait\Firebase\ServiceAccount;
@@ -41,7 +41,7 @@
             
             // -- just insert a new row with the current datetime (serverTimestamp)
             $docRef = $fireCollection->add(
-                ['postedBy' => $postedBy, 'postedDate'=>FieldValue::serverTimestamp()]
+                ['postedBy' => $postedBy, 'postedDate'=>FieldValue::serverTimestamp()]  // this will take the current time
             );
         }
         // ======== CloudStorage
@@ -65,8 +65,9 @@
             return $newImageFileName;
         }
         // ========== Push Notification
+        
         public function sendNotificationByDevice($notificationsArray) {
-            // $noficationsArray = [{token: token, title: title, body: body}]
+            // $noficationsArray = [{token=>token, title=>title, body=>body}]
             $fireMessaging = $this->factory->createMessaging();
 
             foreach($notificationsArray as $notify) {
