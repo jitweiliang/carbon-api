@@ -40,12 +40,36 @@
                             $sql->execute();                           
                             $data2 = $sql->fetch(PDO::FETCH_OBJ);       // $data2->activeUses == 3
 
-
                             echo json_encode(
                                 array("totalUsers"=>$data1->totalUsers, "activeUsers"=>$data2->activeUsers));
-                            // ["totalUsers"=>$data1->totalUsers, "activeUsers"=>$data2->activeUsers]    
 
                             break;
+                        // -- get users summary
+                        case preg_match('/\/api\/users\/activities\/id\/d{0,3}/', $uri):
+                            $param = basename($uri);
+
+                            // 1 -- get total users
+                            $stmt = "select count(*) as emissionsCount 
+                                        from carbon_emissions where user_id = :userId";
+                            $sql = $this->pdo->prepare($stmt);
+                            $sql->bindValue(":userId", $param, PDO::PARAM_INT);
+
+                            $sql->execute();                           
+                            $data1 = $sql->fetch(PDO::FETCH_OBJ);       // $data1->emissionCount == 4
+
+                            // 2 -- get total active users current month
+                            $stmt = "select count(*) as bulletinsCount 
+                                        from carbon_emissions where user_id = :userId";
+                            $sql = $this->pdo->prepare($stmt);
+                            $sql->bindValue(":userId", $param, PDO::PARAM_INT);
+
+                            $sql->execute();                           
+                            $data2 = $sql->fetch(PDO::FETCH_OBJ);       // $data2->activeUses == 3
+
+                            echo json_encode(
+                                array("emissionsCnt"=>$data1->emissionsCount, "bulletinsCnt"=>$data2->bulletinsCount));
+
+                            break;                            
                         // -- get single user by id
                         case preg_match('/\/api\/users\/id\/d{0,3}/', $uri):
                             // this is the last parameter in the url
@@ -159,7 +183,6 @@
                                 $sql->bindValue(":token",     $model["token"],     PDO::PARAM_STR);
                 
                                 $sql->execute();
-                                echo json_encode($sql->rowCount());
                             }
                             // --- if user exists, then will update user data in table
                             else if($recordCount == 1) {
@@ -170,7 +193,6 @@
                                 $sql->bindValue(":userEmail", $model["userEmail"], PDO::PARAM_STR);
                                 
                                 $sql->execute();
-                                echo json_encode($sql->rowCount());
                             }
                             // --- if more than one users with the same email
                             else {
