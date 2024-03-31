@@ -48,7 +48,7 @@
                 require "./src/controllers/EmissionController.php";
                 $controller = new EmissionController();
             }
-            else if(preg_match("/\/api\/test$/", $requestURL)) {
+            else if(preg_match("/\/api\/test/", $requestURL)) {
                 require "./src/controllers/TestController.php";
                 $controller = new TestController();
             }

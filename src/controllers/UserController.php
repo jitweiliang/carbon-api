@@ -24,6 +24,22 @@
                 // ============================ G E T ==============================
                 case "GET":
                     switch(true) {
+                        // -- get single user by id
+                        case preg_match('/\/api\/users\/id\/d{0,3}/', $uri):
+                            // this is the last parameter in the url
+                            $param = basename($uri);    
+
+                            $stmt = "select id as userId, user_name as userName, user_email as userEmail, user_address1 as userAddress1, user_address2 as userAddress2,
+                                        user_contactno as userContactNo, photo_url as photoUrl, about_me as aboutMe 
+                                        from carbon_users WHERE id = :id";
+                            $sql = $this->pdo->prepare($stmt);
+                            $sql->bindValue(":id", $param, PDO::PARAM_INT);
+                            $sql->execute();
+                            
+                            $data = $sql->fetch(PDO::FETCH_ASSOC);
+                            echo json_encode($data, JSON_UNESCAPED_SLASHES);
+
+                            break;
                         // -- get users summary
                         case preg_match('/\/api\/users\/summary$/', $uri):
 
@@ -70,22 +86,6 @@
                                 array("emissionsCnt"=>$data1->emissionsCount, "bulletinsCnt"=>$data2->bulletinsCount));
 
                             break;                            
-                        // -- get single user by id
-                        case preg_match('/\/api\/users\/id\/d{0,3}/', $uri):
-                            // this is the last parameter in the url
-                            $param = basename($uri);    
-
-                            $stmt = "select id as id, user_name as userName, user_email as userEmail, user_address1 as userAddress1, user_address2 as userAddress2,
-                                        user_contactno as userContactNo, photo_url as photoUrl, about_me as aboutMe 
-                                        from carbon_users WHERE id = :id";
-                            $sql = $this->pdo->prepare($stmt);
-                            $sql->bindValue(":id", $param, PDO::PARAM_INT);
-                            $sql->execute();
-                            
-                            $data = $sql->fetch(PDO::FETCH_ASSOC);
-                            echo json_encode($data);
-
-                            break;
                         // --- if requests do not match any api
                         default:
                             throw new Exception("Invalid get request !!!");
@@ -101,7 +101,7 @@
 
                             $stmt = "update carbon_users 
                                             set user_name=:userName, user_address1=:userAddress1, user_address2=:userAddress2, user_contactNo=:userContactNo, about_me=:aboutMe  
-                                            where id=:id";
+                                            where id=:userId";
                             $sql = $this->pdo->prepare($stmt);
                             
                             $sql->bindValue(":userName",      $model["userName"],      PDO::PARAM_STR);
@@ -109,7 +109,7 @@
                             $sql->bindValue(":userAddress2",  $model["userAddress2"],  PDO::PARAM_STR);
                             $sql->bindValue(":userContactNo", $model["userContactNo"], PDO::PARAM_STR);
                             $sql->bindValue(":aboutMe",       $model["aboutMe"],       PDO::PARAM_STR);
-                            $sql->bindValue(":id",            $model["id"],            PDO::PARAM_INT);                    
+                            $sql->bindValue(":userId",        $model["userId"],            PDO::PARAM_INT);                    
 
                             $sql->execute();                   
                             echo json_encode($sql->rowCount());
@@ -121,6 +121,20 @@
                 // ============================ P O S T ============================
                 case "POST":
                     switch(true) {
+                        // -- get single user by id
+                        case preg_match('/\/api\/users\/id\/d{0,3}/', $uri):
+                            // this is the last parameter in the url
+                            $param = basename($uri);    
+                        
+                            $stmt = "SELECT * FROM carbon_users WHERE id = :id";
+                            $sql = $this->pdo->prepare($stmt);
+                            $sql->bindValue(":id", $param, PDO::PARAM_INT);
+                            $sql->execute();
+                                                    
+                            $data = $sql->fetch(PDO::FETCH_ASSOC);
+                            echo json_encode($data);    
+                        
+                            break;
                         // -- get single user by email
                         case preg_match('/\/api\/users\/email$/', $uri):
                             // --- get json data from request
@@ -156,10 +170,11 @@
                                 $sql->bindValue(":photoUrl",  $photoUrl, PDO::PARAM_STR);
                                 $sql->bindValue(":userEmail", $userEmail, PDO::PARAM_STR);
                                 $sql->execute();
-                            }
+                           }
 
-                            break;
-                               
+                            echo json_encode(array("photoUrl"=> $photoUrl));
+
+                            break;                            
                         // -- upsert user profile
                         case preg_match('/\/api\/users$/', $uri):
                             // --- get json data from request
@@ -201,14 +216,14 @@
 
                             // --- now will return the user details if all upserts are successful
                             $stmt = "select id as userId, user_name as userName, user_email as userEmail, user_address1 as userAddress1, user_address2 as userAddress2, 
-                                        photo_url as photourl, about_me as aboutMe from carbon_users where user_email = :userEmail";
+                                        photo_url as photoUrl, about_me as aboutMe from carbon_users where user_email = :userEmail";
                             $sql = $this->pdo->prepare($stmt);
                             $sql->bindValue(":userEmail", $model["userEmail"], PDO::PARAM_STR);
 
                             $sql->execute();                           
                             $user = $sql->fetch(PDO::FETCH_OBJ);
 
-                            echo json_encode($user);
+                            echo json_encode($user, JSON_UNESCAPED_SLASHES );
                             break;
                     }
 

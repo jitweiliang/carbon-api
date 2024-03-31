@@ -66,15 +66,15 @@
         }
         // ========== Push Notification
         
-        public function sendNotificationByDevice($notificationsArray) {
+        public function sendNotificationByDevices($notificationsArray) {
             // $noficationsArray = [{token=>token, title=>title, body=>body}]
             $fireMessaging = $this->factory->createMessaging();
 
             foreach($notificationsArray as $notify) {
-                $deviceToken = $notify->token;
+                $deviceToken = $notify["token"];
 
                 $message = CloudMessage::withTarget('token', $deviceToken)
-                                ->withNotification(Notification::create($notify->title, $notify->body))
+                                ->withNotification(Notification::create($notify["title"], $notify["body"]))
                                 ->withData(['key' => 'value']);
                 $fireMessaging->send($message);
             }

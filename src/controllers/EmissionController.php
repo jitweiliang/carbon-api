@@ -174,8 +174,7 @@
                             throw new Exception("Invalid get request !!!");
                             break;
                         }
-                        
-                    
+
                     break;
 
                 // ============================ P O S T ============================                

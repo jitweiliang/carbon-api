@@ -34,7 +34,11 @@
                             echo json_encode($data);
                             break;
                         case preg_match('/\/api\/test\/messaging\/token\/[^\/]+/', $uri):
-                            $data = $this->sdk->sendNotification("123", "titletitletitle", "messagemessagemessage");
+                            $notiArray = [
+                                array("token"=>"dkLNUrqwMnK31b9k3AL73D:APA91bFyHsUZyOKA2gb2SzW_-drh_KcP-dgLRDeMqs8PuKmaSYsW5hfXsADXp6sncb8IV6MaJztvd0TkPn7jCvil846bS0YfKISTT-WacdJZovLPNqCJG2Bijk3JgSYTGEcAdMxyuJBi", 
+                                        "title"=>"test", 
+                                        "body"=>"testtesttest")];
+                            $data = $this->sdk->sendNotificationByDevices($notiArray);
 
                             echo json_encode($data);
                             break;
