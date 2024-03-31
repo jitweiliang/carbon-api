@@ -23,7 +23,7 @@
                 case "GET":
                     switch(true) {
                         // -- get all latest bulletins (top 10)
-                        case preg_match('/\/api\/bulletins\/latest\/d{0,3}/', $uri):
+                        case preg_match('/\/api\/bulletins\/latest$/', $uri):
                             $param = basename($uri);
                             
                             $stmt = "select t1.id as id, t2.id as userId, t2.user_name as userName, 
@@ -62,7 +62,22 @@
                         // -- push new updates (row) to firestore
                         $this->sdk->firestoreAdd('bulletins', $model["userId"]);
                         // -- send notifications to all users
-                        
+                        // Select ALL tokens from users, then prep n execute
+                        $stmt = 'select token from carbon_users';
+                        $sql = $this->pdo->prepare($stmt);
+                        $sql->execute();
+
+                        // Init an Assoc Array to store the data
+                        $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+
+                        // Then loop through it and get the results into another array in the desired format
+                        // $noficationsArray = [{token=>token, title=>title, body=>body}]
+                        $notifArray = [];
+                        foreach($data as $dataEle) {
+                            array_push($notifArray, ["token"=>$dataEle["token"], "title"=>"HELP Carbon Emission App", "body"=>"A new bulletin has been posted!"]);
+                        };
+                        // Now we call the SDK
+                        $this->sdk->sendNotificationByDevice($notifArray);
                     }
 
                     break;
