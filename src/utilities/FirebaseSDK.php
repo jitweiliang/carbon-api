@@ -65,20 +65,20 @@
             return $newImageFileName;
         }
         // ========== Push Notification
-        
-        public function sendNotificationByDevices($notificationsArray) {
+        public function sendNotificationToOneDevice($token, $title, $body) {
             // $noficationsArray = [{token=>token, title=>title, body=>body}]
-            $fireMessaging = $this->factory->createMessaging();
+            try {
+                $fireMessaging = $this->factory->createMessaging();
 
-            foreach($notificationsArray as $notify) {
-                $deviceToken = $notify["token"];
-
-                $message = CloudMessage::withTarget('token', $deviceToken)
-                                ->withNotification(Notification::create($notify["title"], $notify["body"]))
-                                ->withData(['key' => 'value']);
+                $message = CloudMessage::withTarget('token', $token)
+                            ->withNotification(Notification::create($title, $body))
+                            ->withData(['key' => 'value']);
                 $fireMessaging->send($message);
+    
+                return 1;    
             }
-
-            return 1;
-        }
+            catch(Exception $ex) {
+                return 0;
+            }
+        } 
     }

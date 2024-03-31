@@ -75,7 +75,7 @@
 
                             // 2 -- get total active users current month
                             $stmt = "select count(*) as bulletinsCount 
-                                        from carbon_emissions where user_id = :userId";
+                                        from carbon_bulletins where user_id = :userId";
                             $sql = $this->pdo->prepare($stmt);
                             $sql->bindValue(":userId", $param, PDO::PARAM_INT);
 

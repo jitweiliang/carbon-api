@@ -35,7 +35,7 @@
                             break;
                         case preg_match('/\/api\/test\/messaging\/token\/[^\/]+/', $uri):
                             $notiArray = [
-                                array("token"=>"dkLNUrqwMnK31b9k3AL73D:APA91bFyHsUZyOKA2gb2SzW_-drh_KcP-dgLRDeMqs8PuKmaSYsW5hfXsADXp6sncb8IV6MaJztvd0TkPn7jCvil846bS0YfKISTT-WacdJZovLPNqCJG2Bijk3JgSYTGEcAdMxyuJBi", 
+                                array("token"=>"euVyurY1RhdGZ9si2xQNJX:APA91bEHF8YDFO_aryfMIghI7bGg1frJus8Gleq0oSHE_TTQaSPOpC260lh7LT93D_LqJHmie3i3k_ex4LGZ4-UNDRjjYfjUweN32bLoepamR7cPJRDO9ZRZevJMBZ_aGMbd2SX7hMkp", 
                                         "title"=>"test", 
                                         "body"=>"testtesttest")];
                             $data = $this->sdk->sendNotificationByDevices($notiArray);

@@ -201,6 +201,19 @@
                         // -- push new updates (row) to firestore
                         $this->sdk->firestoreAdd('emissions', $model["userId"]);
                         // -- send notification to users
+                        // Select ALL tokens from users, then prep n execute
+                        $stmt = 'select token from carbon_users where token is not null';
+                        $sql = $this->pdo->prepare($stmt);
+                        $sql->execute();
+
+                        $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+                        foreach($data as $dataEle) {
+                            $this->sdk->sendNotificationToOneDevice(
+                                $dataEle["token"],
+                                "HELP Carbon Emission Achievement",
+                                "Congratulations {$model["userName"]} for you latest achievement !!!"
+                            );
+                        };
                     }
 
                     // -- to return lastest insert id so the certificate can be displayed
