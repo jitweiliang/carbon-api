@@ -18,7 +18,7 @@
 
         public function processRequest(string $verb, ?string $uri): void 
         {
-            switch ($verb) {
+                switch ($verb) {
                 // ============================ G E T ==============================
                 case "GET":
                     switch(true) {

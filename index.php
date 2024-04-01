@@ -52,6 +52,10 @@
                 require "./src/controllers/TestController.php";
                 $controller = new TestController();
             }
+            else if(preg_match("/\/api\/resources/", $requestURL)) {
+                require "./src/controllers/ResourceController.php";
+                $controller = new ResourceController();
+            }
            
 
             // --- process controller requests
