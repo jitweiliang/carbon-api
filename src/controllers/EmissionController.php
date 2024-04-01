@@ -118,10 +118,15 @@
         
                                 break;                    
                         // -- get average of emissions categories
-                        case preg_match('/\/api\/emissions\/average$/', $uri):
-                            $stmt = "select count(*) as emissionCount, sum(total_emission) as totalEmission, avg(total_emission) as avgEmission from carbon_emissions";
+                        case preg_match('/\/api\/emissions\/average\/user\/d{0,3}/', $uri):
+                            $param = basename($uri);
+
+                            $stmt = "select count(*) as emissionCount, sum(total_emission) as totalEmission, avg(total_emission) as avgEmission 
+                                        from carbon_emissions where user_id = :userId";
 
                             $sql = $this->pdo->prepare($stmt);
+                            $sql->bindValue(":userId", $param, PDO::PARAM_INT);
+
                             $sql->execute();
                             
                             $data = $sql->fetch(PDO::FETCH_ASSOC);
