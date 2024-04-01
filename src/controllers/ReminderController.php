@@ -88,6 +88,32 @@
                 // ============================ P O S T ============================
                 case "POST":
                     switch(true) {
+                        case preg_match('/\/api\/reminders\/event\/5m$/', $uri):
+                            // https://stackoverflow.com/questions/41177335/php-get-current-time-in-specific-time-zone
+                            // https://www.php.net/manual/en/timezones.asia.php
+                            $currentDate = new DateTime(null, new DateTimeZone('Asia/Kuala_Lumpur'));
+                            $currentDateStr = $currentDate->format('Y-m-d H:i:s');
+                            // Select ALL tokens from users, then prep n execute
+                            $stmt = "select t3.token as token, t2.event_name as eventName, t1.reminder_date
+                                        from carbon_reminders t1
+                                            left join carbon_events t2 ON t1.event_id = t2.id
+                                            left join carbon_users t3 ON t1.user_id = t3.id
+                                        where TIMESTAMPDIFF(MINUTE,{$currentDateStr}, reminder_date) between 0 AND 5
+                                        and remind_before = '5m'";
+                            $sql = $this->pdo->prepare($stmt);
+                            $sql->execute();
+
+                            $data = $sql->fetchAll(PDO::FETCH_ASSOC);
+                            foreach($data as $dataEle) {
+                                $this->sdk->sendNotificationToOneDevice(
+                                    $dataEle["token"],
+                                    "HELP Carbon Events Reminder",
+                                    "A reminder for you upcoming event {$dataEle['eventName']}"
+                                );
+                            };
+
+
+                            break;
                         case preg_match('/\/api\/reminders$/', $uri):
                             // --- get json data from request
                             $model = (array) json_decode(file_get_contents("php://input"), true);
