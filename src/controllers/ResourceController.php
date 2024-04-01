@@ -22,12 +22,12 @@
                 case "GET":
                     switch (true) {
                         case preg_match('/\/api\/resources$/', $uri):
-                            $stmt = "select id as rssId, rss_url as url, rss_title as title, rss_description as desciption, rss_type as type
+                            $stmt = "select id as rssId, rss_url as url, rss_title as title, rss_description as description, rss_type as type
                                         from carbon_rss";
                             $sql = $this->pdo->prepare($stmt);
                             $sql->execute();
                             
-                            $data = $sql->fetch(PDO::FETCH_ASSOC);
+                            $data = $sql->fetchAll(PDO::FETCH_OBJ);
                             echo json_encode($data, JSON_UNESCAPED_SLASHES);
 
                             break;
@@ -55,7 +55,7 @@
                             $sql->execute();
                                     
                             // -- Receive the return data 
-                            $data = $sql->fetch(PDO::FETCH_ASSOC);
+                            $data = $sql->fetchAll(PDO::FETCH_OBJ);
                             echo json_encode($data);    
 
                             break;
