@@ -92,7 +92,7 @@
                                         array_push($transportationSummary, $dat->transportation);
                                     }                                    
                                 }
-                                // -- 2. get array of transportation
+                                // -- 2. get array of food
                                 $stmt = "select food from carbon_emissions where user_id = :userId 
                                             order by id desc limit 5";
     
@@ -112,7 +112,8 @@
                                     "date"          =>$daySummary,
                                     "household"     =>$householdSummary,
                                     "transportation"=>$transportationSummary,
-                                    "food"          =>$foodSummary
+                                    "food"          =>$foodSummary,
+                                    "totalEmission" =>$householdSummary + $transportationSummary + $foodSummary
                                 );
                                 echo json_encode($totalSummary);
         

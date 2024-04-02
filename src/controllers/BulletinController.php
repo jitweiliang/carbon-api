@@ -24,9 +24,7 @@
                     switch(true) {
                         // -- get all latest bulletins (top 10)
                         case preg_match('/\/api\/bulletins\/latest$/', $uri):
-                            $param = basename($uri);
-                            
-                            $stmt = "select t1.id as id, t2.id as userId, t2.user_name as userName, 
+                            $stmt = "select t1.id as id, t2.id as userId, t2.user_name as userName, t2.photo_url as photoUrl, 
                                         t1.title as title, t1.message as message, t1.post_date as postDate 
                                         from carbon_bulletins t1 
                                             left join carbon_users t2 on t1.user_id = t2.id order by t1.id desc limit 10";

@@ -2,7 +2,7 @@
     // https://www.php.net/manual/en/pdo.connections.php
 
     class Database {
-        // This is the CLOUD one
+        // // // This is the CLOUD one
         // private $host     = '35.186.148.24';
         // private $db_name  = 'carbon-db';
         // private $username = 'root';
@@ -16,8 +16,9 @@
         //         $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         //     } 
         //     catch(PDOException $e) {
-        //         echo 'Connection Error: ' . $e->getMessage();
+        //    throw new Exception($e->getMessage());
         //     }
+        
         //     return $this->conn;
         // }
 
@@ -39,8 +40,9 @@
                 $this->conn = new PDO($connString, $this->username, $this->password);
             } 
             catch(PDOException $e) {
-                echo 'Connection Error: ' . $e->getMessage();
+                throw new Exception($e->getMessage());
             }
+
             return $this->conn;
         }
   }

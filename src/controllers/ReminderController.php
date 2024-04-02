@@ -98,7 +98,7 @@
                                         from carbon_reminders t1
                                             left join carbon_events t2 ON t1.event_id = t2.id
                                             left join carbon_users t3 ON t1.user_id = t3.id
-                                        where TIMESTAMPDIFF(MINUTE,{$currentDateStr}, reminder_date) between 0 AND 5
+                                        where TIMESTAMPDIFF(MINUTE, reminder_date, '{$currentDateStr}') between 0 AND 5
                                         and remind_before = '5m'";
                             $sql = $this->pdo->prepare($stmt);
                             $sql->execute();
